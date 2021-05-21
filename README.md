@@ -8,4 +8,6 @@ The code is mainly used to calculated sound field of arbitrary acoustic sources.
 
 Spherically focused and circular shaped transducer with a center frequency $f_{c}$ of 100 kHz, an aperture $D$ of 25 mm, and a curvature $r_{c}$ of 23 mm. 
 
-![(Spherically focused transducer](images/spherically_focused_XZ.png)
+![(Spherically focused transducer XZ plane](images/spherically_focused_XZ.png)
+
+![(Spherically focused transducer YZ plane](images/spherically_focused_YZ.png)
