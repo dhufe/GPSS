@@ -12,7 +12,7 @@ sns.set()
 sns.set_style("white")
 plt.style.use('seaborn-deep')
 
-plt.rcParams['figure.figsize'] = (12, 8)
+plt.rcParams['figure.figsize'] = (4, 1.68*4)
 
 fig_prefix = ""
 
@@ -356,11 +356,11 @@ def main():
         # ds, a , b 
         # a in x direction
         # b in y direction 
-        #Xs, Ys, Zs = BuildRectangularSource(ds, 210e-3, 80e-3, PlotSource=False )
+        Xs, Ys, Zs = BuildRectangularSource(ds, 20e-3, 8e-3, PlotSource=False )
 
         # Generate spherically focussed circular point source distribution 
         # BuildSphericallyCircularSource( spatioal resolution, transducer radius, transducer curvature )
-        Xs, Ys, Zs = BuildSphericallyCircularSource(ds, 12.5e-3, 23e-3)
+        #Xs, Ys, Zs = BuildSphericallyCircularSource(ds, 12.5e-3, 23e-3)
         
         # Generate cylindrical point source distribution 
         #Xs, Ys, Zs = BuildCylindricalSource()
@@ -383,7 +383,7 @@ def main():
         
         pp = np.sqrt ( p.imag*p.imag + p.real*p.real) 
         Lp = 20*np.log10( pp  / 20e-6 )
-        fileName = str(int(iFrequ)) + '_Sphere_YZ'
+        fileName = str(int(iFrequ)) + '_Rect_YZ'
         SaveData ( fileName, Xmesh, Ymesh, Zmesh, pp )
         PlotData( fileName, pp , Ymesh, Zmesh )
 
