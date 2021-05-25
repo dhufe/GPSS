@@ -239,6 +239,61 @@ def BuildSphericallyCircularSource ( ds, Rs, R, PlotSource=True ):
 
     return Xs, Ys, Zs
 
+def BuildSphericallyRectSource ( ds, a, b, Rs, R, PlotSource=True ):
+    """
+    Implements a spherical curved rectangular acoustic source pattern
+
+    ds: numeric stepsize
+    a:  width of the rect
+    b:  height of the rect
+    Rs: radius of the source
+    r:  radius of the curvature
+    Plot: Plotting source distribution
+
+    """
+
+    alpha = np.arcsin(Rs/ R) * 180 / np.pi
+    L = np.pi * R / 180.0 * alpha
+
+    H = R - np.sqrt ( R**2 - Rs**2)
+    S = 2 * np.pi * R * H
+    l0 = ds*.5 
+    r0, h0, s0, ll0 = SphereSegment( R, l0 )
+
+    Xs = Ys = Zs = np.array([])
+
+    nRings = int( np.ceil((L - l0)/ds ) )
+
+    dRings = L / nRings 
+    l = l0 
+    sprev = s0 
+    nSource = 0 
+
+    for iRing in range (1, nRings ):
+        l += dRings 
+        r, h, s, ll = SphereSegment(R, l)
+        sRing = s - sprev
+        sprev = s
+
+        nPieces = int ( np.ceil ( ll / ds ) )
+        dBeta = 360 / nPieces 
+        nSource += nPieces
+
+        rh, hh, sh, llh = SphereSegment(R , l + dRings*.5 )
+
+        for iPiece in range ( 0, nPieces ):
+            beta = iPiece * dBeta
+            if ( ( np.abs(rh * np.cosd(beta)) < .5*a ) & ( np.abs( rh * np.sind(beta) ) < .5*b) ):  
+                Xs = np.append ( Xs, rh * np.sind(beta) )
+                Ys = np.append ( Ys, rh * np.cosd(beta) )
+                Zs = np.append ( Zs, hh)
+
+    if PlotSource:
+       PlottingSourceConfiguration(Xs, Ys, Zs)
+
+    return Xs, Ys, Zs
+
+
 
 
 def BuildCylindricalSource ( PlotSource=False ):
@@ -326,15 +381,20 @@ def PlotData ( fileName, data, Xmesh, Ymesh ):
 
     bounds = [ Xmesh.min(),Xmesh.max(),Ymesh.min(),Ymesh.max()]
     # ax0.imshow ( data, cmap=colormap, extent = bounds, origin='lower')
-    ax0.pcolor ( Xmesh, Ymesh, data, cmap=colormap ) 
+    
+    im1 = ax0.pcolor ( Xmesh, Ymesh, data, cmap=colormap ) 
+    #fig.colorbar( im1, ax=ax.)
+
     line = data[:, w//2]
+
     ax1.plot( line , Ymesh[:,w//2], 'k-', linewidth=1.0 )
     ax1.set_ylim ( bounds[2], bounds[3] )
     ax1.set_xlim ( .9 * np.amin (line) , 1.1 * np.amax (line) )
     ax1.invert_xaxis()
 
-    line = data[ h//10, : ]
-    ax2.plot( Xmesh[ h//10, : ], line , 'k-', linewidth=1.0 )
+    idx_max_x = int(np.argmax(line)) 
+    line = data[ idx_max_x , : ]
+    ax2.plot( Xmesh[ idx_max_x, : ], line , 'k-', linewidth=1.0 )
     ax2.set_xlim ( bounds[0], bounds[1] )
     ax2.set_ylim ( .9 * np.amin (line) , 1.1 * np.amax (line) )
     plt.savefig( fileName + '.png', dpi=300 )
@@ -351,12 +411,14 @@ def main():
 
         print ( "Calculating soundfield @ %2.0f kHz." % ( iFrequ / 1e3) )
 
-        # Xs, Ys, Zs = BuildCircularSource(ds, .5*17e-3, PlotSource=True)
+        Xs, Ys, Zs = BuildCircularSource(ds, 9.5e-3, PlotSource=False)
 
         # ds, a , b 
         # a in x direction
         # b in y direction 
-        Xs, Ys, Zs = BuildRectangularSource(ds, 20e-3, 8e-3, PlotSource=False )
+        # Xs, Ys, Zs = BuildRectangularSource(ds, 20e-3, 8e-3, PlotSource=False )
+
+        Xs, Ys, Zs = BuildSphericallyRectSource(ds, 20e-3, 8e-3, 12.5e-3, 23e-3 )
 
         # Generate spherically focussed circular point source distribution 
         # BuildSphericallyCircularSource( spatioal resolution, transducer radius, transducer curvature )
@@ -374,8 +436,8 @@ def main():
         #Zmesh = np.zeros ( Ymesh.shape )
 
         #Xmesh, Ymesh, Zmesh = np.meshgrid(X, Y, Z, indexing='ij')
-        Ymesh, Zmesh = np.meshgrid(Y , Z )
-        Xmesh = np.zeros ( Ymesh.shape )
+        Xmesh, Zmesh = np.meshgrid(X , Z )
+        Ymesh = np.zeros ( Xmesh.shape )
 
         p = np.zeros ( shape=Xmesh.shape, dtype=np.cdouble )
         # gpss.gpss_calculation3D ( Xs, Ys, Zs, I0, iFrequ, Xmesh, Ymesh, Zmesh, p )
@@ -383,9 +445,9 @@ def main():
         
         pp = np.sqrt ( p.imag*p.imag + p.real*p.real) 
         Lp = 20*np.log10( pp  / 20e-6 )
-        fileName = str(int(iFrequ)) + '_Rect_YZ'
+        fileName = str(int(iFrequ)) + '_SphereRect_XZ'
         SaveData ( fileName, Xmesh, Ymesh, Zmesh, pp )
-        PlotData( fileName, pp , Ymesh, Zmesh )
+        PlotData( fileName, pp , Xmesh, Zmesh )
 
 
 if __name__ == "__main__":
