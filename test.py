@@ -9,10 +9,10 @@ from GPSSPlot import GPSSPlot
 
 
 df = 25e3 
-fmax = 250e3
+fmax = 500e3
 c = 343 
 ds = (c/fmax)/10 
-
+pulsewidth = 1e-6
 Curv = [23e-3, 69e-3, 114e-3 ]
 
 X = np.arange ( -20e-3, 20e-3, ds)
@@ -24,6 +24,8 @@ Xmesh = np.zeros ( Ymesh.shape )
 
 p = np.zeros ( shape=Ymesh.shape, dtype=np.cdouble )
 fileName = 'SphericallyCurvedRectSourceFieldData_Rc_' + str(int(Curv[0]*1e3)) + '_mm_YZ_Complex'
+
+Amax = np.abs ( np.sin( df * np.pi * pulsewidth ) / ( np.pi * df ) )
 
 for iFreq in np.arange ( df, fmax, df ):
     X = np.arange ( -20e-3, 20e-3, ds)
@@ -38,7 +40,9 @@ for iFreq in np.arange ( df, fmax, df ):
     Xs, Ys, Zs = GPSS.BuildSphericallyRectSource(ds, 17.54e-3, 17.25e-3, 12.5e-3, Curv[0] )
     I0 = 1.0 / Xs.size 
     # Calculating the resulting two-dimensional complex field
-    p += GPSS.RunCalculation2DComplex(Xs, Ys, Zs, iFreq, Xmesh, Ymesh, Zmesh, I0 )
+    dP = GPSS.RunCalculation2DComplex(Xs, Ys, Zs, iFreq, Xmesh, Ymesh, Zmesh, I0 )
+    # weighting using rectangular window 
+    p += dP * np.abs ( np.sin ( iFreq * np.pi * pulsewidth ) / ( np.pi * iFreq ) ) / Amax  
 
 pp = np.sqrt(p.real*p.real + p.imag*p.imag)
 GPSSPlot.PlotFieldData( fileName, pp, Ymesh, Zmesh)
