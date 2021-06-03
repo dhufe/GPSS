@@ -1,26 +1,26 @@
 import matplotlib.pyplot as plt 
 import numpy as np
-import seaborn as sns 
+# import seaborn as sns 
 import pybamcmap 
 
 class GPSSPlot:
     @staticmethod 
-    def set_style():
-        # This sets reasonable defaults for font size for
-        # a figure that will go in a paper
-        sns.set_context("paper")
-    
-        # Set the font to be serif, rather than sans
-        sns.set(font='serif',style="ticks")
-
-        # Make the background white, and specify the
-        # specific font family
-        sns.set_style("white", {
-            "font.family": "serif",
-            "font.serif": ["Times", "Palatino", "serif"]
-        })
-        sns.set_style("ticks", {"xtick.major.size": 8, "ytick.major.size": 8})
-        sns.set_style({"xtick.direction": "in","ytick.direction": "in"})
+#    def set_style():
+#        # This sets reasonable defaults for font size for
+#        # a figure that will go in a paper
+#        sns.set_context("paper")
+#    
+#        # Set the font to be serif, rather than sans
+#        sns.set(font='serif',style="ticks")
+#
+#        # Make the background white, and specify the
+#        # specific font family
+#        sns.set_style("white", {
+#            "font.family": "serif",
+#            "font.serif": ["Times", "Palatino", "serif"]
+#        })
+#        sns.set_style("ticks", {"xtick.major.size": 8, "ytick.major.size": 8})
+#        sns.set_style({"xtick.direction": "in","ytick.direction": "in"})
 
     @staticmethod 
     def set_size(fig, width, height ):
@@ -38,7 +38,7 @@ class GPSSPlot:
         else:
             MarkerSize = Ps 
 
-        GPSSPlot.set_style()
+ #       GPSSPlot.set_style()
 
         fig, ax = plt.subplots(2, 2)
         ax[0][0].scatter ( Xs*1e3, Ys*1e3, s=MarkerSize, c='r', marker='o')
@@ -102,9 +102,9 @@ class GPSSPlot:
 
         ### plotting the data
         bounds = [ Xmesh.min(),Xmesh.max(),Ymesh.min(),Ymesh.max()]
-        GPSSPlot.set_style()
+  #      GPSSPlot.set_style()
    
-        im1 = ax0.pcolor ( Xmesh, Ymesh, data, cmap='bam_jet' ) 
+        im1 = ax0.pcolor ( Xmesh, Ymesh, data, cmap='bam_jet', shading='auto' ) 
 
         line = data[:, w//2]
 
