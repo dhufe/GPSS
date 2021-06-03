@@ -67,7 +67,7 @@ def gpss_calculation3D ( double[:] Xs, double[:] Ys, double[:] Zs, double Q, dou
     cdef double complex dcScaling = 0
     cdef double dAlpha = calculateAlpha( f )
 
-    with nogil, parallel(num_threads=4):
+    with nogil, parallel(num_threads=8):
         for iStep in prange( nSteps , schedule='dynamic'):
             for iX in range ( nX ):
                 for iY in range ( nY ):
@@ -75,8 +75,8 @@ def gpss_calculation3D ( double[:] Xs, double[:] Ys, double[:] Zs, double Q, dou
                         r = ((Xmesh[iX, iY, iZ]-Xs[iStep])**2.0 + (Ymesh[iX, iY, iZ]-Ys[iStep])**2.0 + (Zmesh[iX, iY, iZ]-Zs[iStep])**2.0 )**.5
                         p[iX, iY, iZ] += pressure1D( r, f , Q , dAlpha , c  )
 
-                    with gil:
-                        progress ( iStep, nSteps, 'Calculating 3D soundfield' )
+#                    with gil:
+#                        progress ( iStep, nSteps, 'Calculating 3D soundfield' )
 
 
 @cython.boundscheck(False)
@@ -91,12 +91,12 @@ def gpss_calculation2D ( double[:] Xs, double[:] Ys, double[:] Zs, double Q, dou
     cdef double complex dcScaling = 0
     cdef double dAlpha = calculateAlpha( f )
  
-    with nogil, parallel(num_threads=4):
+    with nogil, parallel(num_threads=8):
         for iStep in prange( nSteps , schedule='dynamic'):
             for iX in range ( nX ):
                 for iY in range ( nY ):
                     r = ((Xmesh[iX, iY]-Xs[iStep])**2.0 + (Ymesh[iX, iY]-Ys[iStep])**2.0 + (Zmesh[iX, iY]-Zs[iStep])**2.0 )**.5
                     p[iX, iY] += pressure1D( r, f , Q, dAlpha, c  )
 
-                with gil:
-                    progress ( iStep, nSteps, 'Calculating 2D soundfield' )
+#                with gil:
+#                    progress ( iStep, nSteps, 'Calculating 2D soundfield' )
