@@ -23,8 +23,10 @@ Ymesh, Zmesh = np.meshgrid(Y , Z )
 Xmesh = np.zeros ( Ymesh.shape )
 
 p = np.zeros ( shape=Ymesh.shape, dtype=np.double )
-fileName = 'RectSourceFieldData_Rc_' + str(int(Curv[0]*1e3)) + '_mm_YZ'
 
+now = datetime.now()
+prefix = now.strftime("YYmmdd")
+fileName = prefix + '_RectSourceFieldData_Rc_' + str(int(Curv[0]*1e3)) + '_mm_YZ'
 
 def thermoacoustic_source ( f, t_pulse ):
     ## constants
@@ -101,7 +103,7 @@ def rect_puls ( f, tpw ):
     return dPulse / np.amax ( dPulse )
 
 
-f = np.arange ( fmax, fmax + df, df) 
+f = np.arange ( df, fmax + df, df) 
 
 A_Rect = rect_puls(f, pulsewidth)
 A_TA   = thermoacoustic_source(f, pulsewidth )
