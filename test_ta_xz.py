@@ -3,13 +3,13 @@ import matplotlib
 matplotlib.use('Agg')
 
 import matplotlib.pyplot as plt 
-
+from datetime import datetime  
 from pss import GPSS
 from GPSSPlot import GPSSPlot
 
 
 df = 25e3 
-fmax = 100e3
+fmax = 200e3
 c = 343 
 ds = (c/fmax)/10
 pulsewidth = 2e-6
@@ -23,7 +23,12 @@ Xmesh, Zmesh = np.meshgrid(X , Z )
 Ymesh = np.zeros ( Xmesh.shape )
 
 p = np.zeros ( shape=Ymesh.shape, dtype=np.double )
-fileName = 'RectSourceFieldData_Rc_' + str(int(Curv[0]*1e3)) + '_mm_XZ'
+
+now = datetime.now()
+
+prefix = now.strftime("YYmmdd")
+
+fileName = prefix + '_RectSourceFieldData_Rc_' + str(int(Curv[0]*1e3)) + '_mm_XZ'
 
 
 def thermoacoustic_source ( f, t_pulse ):
@@ -101,18 +106,21 @@ def rect_puls ( f, tpw ):
     return dPulse / np.amax ( dPulse )
 
 
-f = np.arange ( fmax, fmax + df, df) 
+f = np.arange ( df, fmax + df, df) 
 
 A_Rect = rect_puls(f, pulsewidth)
 A_TA   = thermoacoustic_source(f, pulsewidth )
-
-for iFreq in np.arange ( fmax, fmax + df, df):
+idx = 0
+for iFreq in np.arange ( df, fmax + df, df):
     X = np.arange ( -20e-3, 20e-3, ds)
     Y = np.arange ( -20e-3, 20e-3, ds)
     Z = np.arange ( 0, 100e-3, ds )
 
     Xmesh, Zmesh = np.meshgrid(X , Z )
     Ymesh = np.zeros ( Xmesh.shape )
+
+    if idx != 0:
+        print ('\n')
 
     print ( 'Calculating soundfield @ %3.1f kHz\n' % ( iFreq * 1e-3 ) )
     # build acoustical source 
@@ -122,6 +130,7 @@ for iFreq in np.arange ( fmax, fmax + df, df):
     # Calculating the resulting two-dimensional complex field
     dP = GPSS.RunCalculation2D(Xs, Ys, Zs, iFreq, Xmesh, Ymesh, Zmesh, I0 )
     # weighting using rectangular window 
-    p += dP * A_Rect * A_TA
+    p += dP * A_Rect[idx] * A_TA[idx]
+    idx = idx + 1
 #pp = np.sqrt(p.real*p.real + p.imag*p.imag)
 GPSSPlot.PlotFieldData( fileName, p, Xmesh, Zmesh)
