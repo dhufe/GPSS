@@ -58,6 +58,7 @@ class GPSSPlot:
 
         GPSSPlot.set_size(fig, 6, 6/1.68)
         plt.savefig( fileName, dpi=300 )
+        plt.close(fig)
 
     @staticmethod 
     def PlotFieldData ( fileName, data, Xmesh, Ymesh ):
@@ -120,5 +121,5 @@ class GPSSPlot:
         ax2.set_ylim ( .9 * np.amin (line) , 1.1 * np.amax (line) )
         plt.savefig( fileName + '.png', dpi=300 )
         plt.savefig( fileName + '.pdf', dpi=300 )
-
+        plt.close(fig)
 
