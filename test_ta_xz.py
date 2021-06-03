@@ -7,11 +7,12 @@ from datetime import datetime
 from pss import GPSS
 from GPSSPlot import GPSSPlot
 
+import h5py as hd
 
 df = 25e3 
-fmax = 200e3
+fmax = 500e3
 c = 343 
-ds = (c/fmax)/10
+ds = (c/fmax)/5
 pulsewidth = 2e-6
 Curv = [23e-3, 69e-3, 114e-3 ]
 
@@ -25,10 +26,9 @@ Ymesh = np.zeros ( Xmesh.shape )
 p = np.zeros ( shape=Ymesh.shape, dtype=np.double )
 
 now = datetime.now()
-
-prefix = now.strftime("YYmmdd")
-
-fileName = prefix + '_RectSourceFieldData_Rc_' + str(int(Curv[0]*1e3)) + '_mm_XZ'
+prefix = now.strftime("%Y%m%d-%H%S")
+print (prefix) 
+fileName = prefix + '_SphericallyRect_Rc_' + str(int(Curv[0]*1e3)) + '_mm_XZ'
 
 
 def thermoacoustic_source ( f, t_pulse ):
@@ -105,6 +105,13 @@ def rect_puls ( f, tpw ):
     dPulse = np.abs ( np.sin ( f * np.pi * pulsewidth ) / ( np.pi * f ) )
     return dPulse / np.amax ( dPulse )
 
+def SaveData ( fileName, Xmesh, Ymesh, Zmesh, pdata ):
+    with hd.File(fileName + '.mat', 'w') as fd:
+        fd.create_dataset('Xmesh', data=Xmesh,compression="gzip", compression_opts=9)
+        fd.create_dataset('Ymesh', data=Ymesh,compression="gzip", compression_opts=9)
+        fd.create_dataset('Zmesh', data=Zmesh,compression="gzip", compression_opts=9)
+        fd.create_dataset('p', data=pdata,compression="gzip", compression_opts=9)
+
 
 f = np.arange ( df, fmax + df, df) 
 
@@ -119,9 +126,6 @@ for iFreq in np.arange ( df, fmax + df, df):
     Xmesh, Zmesh = np.meshgrid(X , Z )
     Ymesh = np.zeros ( Xmesh.shape )
 
-    if idx != 0:
-        print ('\n')
-
     print ( 'Calculating soundfield @ %3.1f kHz\n' % ( iFreq * 1e-3 ) )
     # build acoustical source 
     Xs, Ys, Zs = GPSS.BuildSphericallyRectSource(ds, 17.54e-3, 17.25e-3, 12.5e-3, 23e-3 )
@@ -130,7 +134,12 @@ for iFreq in np.arange ( df, fmax + df, df):
     # Calculating the resulting two-dimensional complex field
     dP = GPSS.RunCalculation2D(Xs, Ys, Zs, iFreq, Xmesh, Ymesh, Zmesh, I0 )
     # weighting using rectangular window 
-    p += dP * A_Rect[idx] * A_TA[idx]
+    dP *= A_Rect[idx] * A_TA[idx]
+    # apply to the cummulative pressure field 
+    SliceName = prefix + '_SphericallyRect_Rc_' + str(int(Curv[0]*1e3)) + '_mm_XZ_' + str ( int ( iFreq * 1e-3 ) ) + '_kHz'
+    SaveData(SliceName, Xmesh, Ymesh, Zmesh, dP)
+    p += dP
     idx = idx + 1
 #pp = np.sqrt(p.real*p.real + p.imag*p.imag)
 GPSSPlot.PlotFieldData( fileName, p, Xmesh, Zmesh)
+SaveData(fileName, Xmesh, Ymesh, Zmesh, p )
