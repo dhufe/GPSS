@@ -67,7 +67,7 @@ def gpss_calculation3D ( double[:] Xs, double[:] Ys, double[:] Zs, double Q, dou
     cdef double complex dcScaling = 0
     cdef double dAlpha = calculateAlpha( f )
 
-    with nogil, parallel(num_threads=8):
+    with nogil, parallel(num_threads=16):
         for iStep in prange( nSteps , schedule='dynamic'):
             for iX in range ( nX ):
                 for iY in range ( nY ):
@@ -91,7 +91,7 @@ def gpss_calculation2D ( double[:] Xs, double[:] Ys, double[:] Zs, double Q, dou
     cdef double complex dcScaling = 0
     cdef double dAlpha = calculateAlpha( f )
  
-    with nogil, parallel(num_threads=8):
+    with nogil, parallel(num_threads=16):
         for iStep in prange( nSteps , schedule='dynamic'):
             for iX in range ( nX ):
                 for iY in range ( nY ):

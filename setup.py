@@ -9,6 +9,7 @@ ext_modules = [
         "gpss",
         ["gpss.pyx"],
         libraries=["m"],
+	cython_directives={'language_level' : "3"},
         extra_compile_args = ["-O3", "-ffast-math", "-march=native", "-fopenmp" ],
         extra_link_args=['-fopenmp'],
     )
