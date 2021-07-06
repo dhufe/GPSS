@@ -1,0 +1,14 @@
+#!/bin/bash
+
+#SBATCH --time=160:00:00
+#SBATCH --ntasks=1
+
+#SBATCH --job-name=TA-2US-YZ
+
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=Daniel.Hufschlaeger@bam.de
+
+#SBATCH --error=/home/%u/tmp/job.%J.err
+#SBATCH --output=/home/%u/tmp/job.%J.out
+
+"/home/dhufschl/GPSS/runsim_ta_yz.sh"
