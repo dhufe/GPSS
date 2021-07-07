@@ -1,24 +1,24 @@
 import numpy as np
-import matplotlib
-matplotlib.use('Agg')
+#import matplotlib
+#matplotlib.use('Agg')
 
-import matplotlib.pyplot as plt 
+#import matplotlib.pyplot as plt 
 from datetime import datetime  
 from pss import GPSS
-from GPSSPlot import GPSSPlot
+#from GPSSPlot import GPSSPlot
 
 import h5py as hd
 
 df = 25e3 
 fmax = 1e6
 c = 343 
-ds = (c/fmax)/10
+ds = (c/fmax)/5
 pulsewidth = 1e-6
 Curv = [23e-3, 69e-3, 114e-3 ]
-
+iCurvIndex = 0
 X = np.arange ( -20e-3, 20e-3, ds)
 Y = np.arange ( -20e-3, 20e-3, ds)
-Z = np.arange ( 0, 100e-3, ds )
+Z = np.arange ( 0, 200e-3, ds )
 
 Xmesh, Zmesh = np.meshgrid(X , Z )
 Ymesh = np.zeros ( Xmesh.shape )
@@ -28,7 +28,7 @@ p = np.zeros ( shape=Ymesh.shape, dtype=np.double )
 now = datetime.now()
 prefix = now.strftime("%Y%m%d-%H%S")
 print (prefix) 
-fileName = prefix + '_SphericallyRect_Rc_' + str(int(Curv[1]*1e3)) + '_mm_XZ'
+fileName = prefix + '_SphericallyRect_Rc_' + str(int(Curv[iCurvIndex]*1e3)) + '_mm_XZ'
 
 
 def thermoacoustic_source ( f, t_pulse ):
@@ -124,17 +124,17 @@ f = np.arange ( df, fmax + df, df)
 A_Rect = rect_puls(f, pulsewidth)
 A_TA   = thermoacoustic_source(f, pulsewidth )
 idx = 0
-for iFreq in np.arange ( df, 2*df, df):
+for iFreq in np.arange ( df, fmax + df, df):
     X = np.arange ( -20e-3, 20e-3, ds)
     Y = np.arange ( -20e-3, 20e-3, ds)
-    Z = np.arange ( 0, 100e-3, ds )
+    Z = np.arange ( 0, 200e-3, ds )
 
     Xmesh, Zmesh = np.meshgrid(X , Z )
     Ymesh = np.zeros ( Xmesh.shape )
 
     print ( 'Calculating soundfield @ %3.1f kHz\n' % ( iFreq * 1e-3 ) )
     # build acoustical source 
-    Xs, Ys, Zs = GPSS.BuildSphericallyRectSource(ds, 17.54e-3, 17.25e-3, 12.5e-3, Curv[1] )
+    Xs, Ys, Zs = GPSS.BuildSphericallyRectSource(ds, 17.54e-3, 17.25e-3, 12.5e-3, Curv[iCurvIndex] )
 #    GPSSPlot.PlottingSourceConfiguration(Xs, Ys, Zs)
     I0 = 1.0 * A_Rect[idx] * A_TA[idx] / Xs.size 
     # Calculating the resulting two-dimensional complex field
@@ -142,10 +142,10 @@ for iFreq in np.arange ( df, 2*df, df):
     # weighting using rectangular window 
     #dP *= A_Rect[idx] * A_TA[idx]
     # apply to the cummulative pressure field 
-    SliceName = prefix + '_SphericallyRect_Rc_' + str(int(Curv[1]*1e3)) + '_mm_XZ_' + str ( int ( iFreq * 1e-3 ) ) + '_kHz'
+    SliceName = prefix + '_SphericallyRect_Rc_' + str(int(Curv[iCurvIndex]*1e3)) + '_mm_XZ_' + str ( int ( iFreq * 1e-3 ) ) + '_kHz'
     SaveData(SliceName, Xmesh, Ymesh, Zmesh, dP)
     p += dP
     idx = idx + 1
 #pp = np.sqrt(p.real*p.real + p.imag*p.imag)
-GPSSPlot.PlotFieldData( '/home/dhufschl/GPSS/data/' + fileName, p, Xmesh, Zmesh)
+#GPSSPlot.PlotFieldData( '/home/dhufschl/GPSS/data/' + fileName, p, Xmesh, Zmesh)
 SaveData(fileName, Xmesh, Ymesh, Zmesh, p )
