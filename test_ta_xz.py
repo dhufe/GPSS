@@ -13,9 +13,9 @@ df = 25e3
 fmax = 1e6
 c = 343 
 ds = (c/fmax)/5
-pulsewidth = 1e-6
+pulsewidth = 2e-6
 Curv = [23e-3, 69e-3, 114e-3 ]
-iCurvIndex = 0
+iCurvIndex = 2
 X = np.arange ( -20e-3, 20e-3, ds)
 Y = np.arange ( -20e-3, 20e-3, ds)
 Z = np.arange ( 0, 200e-3, ds )
@@ -109,7 +109,7 @@ def thermoacoustic_source ( f, t_pulse ):
 
 def rect_puls ( f, tpw ):
     dPulse = np.abs ( np.sin ( f * np.pi * pulsewidth ) / ( np.pi * f ) )
-    return dPulse / np.amax ( dPulse )
+    return dPulse / dPulse[0]
 
 def SaveData ( fileName, Xmesh, Ymesh, Zmesh, pdata ):
     with hd.File( '/home/dhufschl/GPSS/data/' + fileName + '.mat', 'w') as fd:
@@ -142,10 +142,11 @@ for iFreq in np.arange ( df, fmax + df, df):
     # weighting using rectangular window 
     #dP *= A_Rect[idx] * A_TA[idx]
     # apply to the cummulative pressure field 
-    SliceName = prefix + '_SphericallyRect_Rc_' + str(int(Curv[iCurvIndex]*1e3)) + '_mm_XZ_' + str ( int ( iFreq * 1e-3 ) ) + '_kHz'
+    sActualFreq = "{:0>4d}".format(int(iFreq*1e-3)) 
+    SliceName = prefix + '_SphericallyRect_Rc_' + str(int(Curv[iCurvIndex]*1e3)) + '_mm_XZ_' + sActualFreq + '_kHz'
     SaveData(SliceName, Xmesh, Ymesh, Zmesh, dP)
     p += dP
     idx = idx + 1
 #pp = np.sqrt(p.real*p.real + p.imag*p.imag)
 #GPSSPlot.PlotFieldData( '/home/dhufschl/GPSS/data/' + fileName, p, Xmesh, Zmesh)
-SaveData(fileName, Xmesh, Ymesh, Zmesh, p )
+#SaveData(fileName, Xmesh, Ymesh, Zmesh, p )
