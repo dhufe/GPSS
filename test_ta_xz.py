@@ -31,7 +31,7 @@ print (prefix)
 fileName = prefix + '_SphericallyRect_Rc_' + str(int(Curv[iCurvIndex]*1e3)) + '_mm_XZ'
 
 
-def thermoacoustic_source ( f, t_pulse ):
+def thermoacoustic_source ( f, t_pulse, rc ):
     ## constants
     f_prf = 50                                              # pulse repeatition frequency
     Pe =  f_prf * t_pulse * 150**2 / 9.6                     # Watt
@@ -59,7 +59,7 @@ def thermoacoustic_source ( f, t_pulse ):
     R = 25e-3 * .5 
     a = 17.25e-3
     b = 17.54e-3
-    S_dev = 4 * Rc**2 * np.arcsin( np.tan ( a / (2*R) )*np.tan ( b / (2*R) ) )
+    S_dev = 4 * rc**2 * np.arcsin( np.tan ( a / (2*R) )*np.tan ( b / (2*R) ) )
     rho_dev = 7200
     cp_dev = 230 
 
@@ -84,8 +84,8 @@ def thermoacoustic_source ( f, t_pulse ):
     alpha_gas = np.sqrt ( lamb_gas * rho_gas * cp_gas )     # thermal penetration coefficient 
     a_gas = lamb_gas / (cp_gas * rho_gas )                  # thermal diffusion
 
-    dQ = Pe * t_pulse * f_prf                           # amount of input energ
-    dSourceR = sos_gas / f                                 # sphere radius for thermodynamic calculation
+    dQ = Pe / f                                             # amount of input energ
+    dSourceR = sos_gas / (2*f)                              # sphere radius for thermodynamic calculation
 
     ### calculate the heat capacities of the system
     #### Gas 
@@ -101,7 +101,7 @@ def thermoacoustic_source ( f, t_pulse ):
     hcap_dev = cp_dev * m_dev                               # heat capcacity of the coating 
 
     N = 1                                                   # number of sources 
-    V_gas = 0.5 * (4/3)*np.pi*dSourceR**3 
+    V_gas = (1/12)*np.pi*dSourceR**3 
     Q_gas = ( dQ / N ) * ( alpha_gas / ( alpha_gas + alpha_sub + fthi_dev * rho_dev * cp_dev * np.sqrt( 2*np.pi*f ) ) )
     P_gas = (Q_gas / V_gas )
 #    print ( 20*np.log10( P_gas / 20e-6  ) ) 
@@ -122,7 +122,7 @@ def SaveData ( fileName, Xmesh, Ymesh, Zmesh, pdata ):
 f = np.arange ( df, fmax + df, df) 
 
 A_Rect = rect_puls(f, pulsewidth)
-A_TA   = thermoacoustic_source(f, pulsewidth )
+A_TA   = thermoacoustic_source(f, pulsewidth, rc )
 idx = 0
 for iFreq in np.arange ( df, fmax + df, df):
     X = np.arange ( -20e-3, 20e-3, ds)
