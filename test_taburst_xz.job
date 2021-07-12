@@ -1,0 +1,16 @@
+#!/bin/bash
+
+#SBATCH --time=190:00:00
+#SBATCH --ntasks=1
+#sBATCH --nnodes=1
+#SBATCH --cpus-per-task=2
+
+#SBATCH --job-name=TA-2US-XZ
+
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=Daniel.Hufschlaeger@bam.de
+
+#SBATCH --error=/home/%u/tmp/job.%J.err
+#SBATCH --output=/home/%u/tmp/job.%J.out
+
+"/home/dhufschl/GPSS/runsim_ta_xz.sh"
