@@ -13,4 +13,4 @@
 #SBATCH --error=/home/%u/tmp/job.%J.err
 #SBATCH --output=/home/%u/tmp/job.%J.out
 
-"/home/dhufschl/GPSS/runsim_ta_xz.sh"
+"/home/dhufschl/GPSS/runsim_taburst_xz.sh"

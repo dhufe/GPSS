@@ -13,7 +13,8 @@ df = 25e3
 fmax = 1e6
 c = 343 
 ds = (c/fmax)/5
-pulsewidth = 2e-6
+pulsewidth = 1e-6
+NPulse = 4
 Curv = [23e-3, 69e-3, 114e-3 ]
 iCurvIndex = 1
 X = np.arange ( -20e-3, 20e-3, ds)
@@ -85,7 +86,7 @@ def thermoacoustic_source ( f, t_pulse ):
     a_gas = lamb_gas / (cp_gas * rho_gas )                  # thermal diffusion
 
     dQ = Pe * t_pulse * f_prf                           # amount of input energ
-    dSourceR = sos_gas / f                                 # sphere radius for thermodynamic calculation
+    dSourceR = sos_gas / (2*f)                                 # sphere radius for thermodynamic calculation
 
     ### calculate the heat capacities of the system
     #### Gas 
@@ -101,7 +102,7 @@ def thermoacoustic_source ( f, t_pulse ):
     hcap_dev = cp_dev * m_dev                               # heat capcacity of the coating 
 
     N = 1                                                   # number of sources 
-    V_gas = 0.5 * (4/3)*np.pi*dSourceR**3 
+    V_gas = (1/12)*np.pi*dSourceR**3 
     Q_gas = ( dQ / N ) * ( alpha_gas / ( alpha_gas + alpha_sub + fthi_dev * rho_dev * cp_dev * np.sqrt( 2*np.pi*f ) ) )
     P_gas = (Q_gas / V_gas )
 #    print ( 20*np.log10( P_gas / 20e-6  ) ) 
@@ -128,7 +129,7 @@ def SaveData ( fileName, Xmesh, Ymesh, Zmesh, pdata ):
 f = np.arange ( df, fmax + df, df) 
 
 A_Rect = rect_puls(f, pulsewidth)
-A_Burst = burst_pulse_train( pulsewidth, 2, f )
+A_Burst = burst_pulse_train( pulsewidth, NPulse, f )
 A_TA   = thermoacoustic_source(f, pulsewidth )
 idx = 0
 for iFreq in np.arange ( df, fmax + df, df):

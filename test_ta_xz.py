@@ -13,9 +13,9 @@ df = 25e3
 fmax = 1e6
 c = 343 
 ds = (c/fmax)/5
-pulsewidth = 2e-6
+pulsewidth = 1e-6
 Curv = [23e-3, 69e-3, 114e-3 ]
-iCurvIndex = 2
+iCurvIndex = 1
 X = np.arange ( -20e-3, 20e-3, ds)
 Y = np.arange ( -20e-3, 20e-3, ds)
 Z = np.arange ( 0, 200e-3, ds )
@@ -104,7 +104,6 @@ def thermoacoustic_source ( f, t_pulse, rc ):
     V_gas = (1/12)*np.pi*dSourceR**3 
     Q_gas = ( dQ / N ) * ( alpha_gas / ( alpha_gas + alpha_sub + fthi_dev * rho_dev * cp_dev * np.sqrt( 2*np.pi*f ) ) )
     P_gas = (Q_gas / V_gas )
-#    print ( 20*np.log10( P_gas / 20e-6  ) ) 
     return P_gas
 
 def rect_puls ( f, tpw ):
@@ -122,7 +121,7 @@ def SaveData ( fileName, Xmesh, Ymesh, Zmesh, pdata ):
 f = np.arange ( df, fmax + df, df) 
 
 A_Rect = rect_puls(f, pulsewidth)
-A_TA   = thermoacoustic_source(f, pulsewidth, rc )
+A_TA   = thermoacoustic_source(f, pulsewidth, Curv[iCurvIndex] )
 idx = 0
 for iFreq in np.arange ( df, fmax + df, df):
     X = np.arange ( -20e-3, 20e-3, ds)
@@ -136,7 +135,7 @@ for iFreq in np.arange ( df, fmax + df, df):
     # build acoustical source 
     Xs, Ys, Zs = GPSS.BuildSphericallyRectSource(ds, 17.54e-3, 17.25e-3, 12.5e-3, Curv[iCurvIndex] )
 #    GPSSPlot.PlottingSourceConfiguration(Xs, Ys, Zs)
-    I0 = 1.0 * A_Rect[idx] * A_TA[idx] / Xs.size 
+    I0 = A_Rect[idx] * A_TA[idx] / Xs.size 
     # Calculating the resulting two-dimensional complex field
     dP = GPSS.RunCalculation2D(Xs, Ys, Zs, iFreq, Xmesh, Ymesh, Zmesh, I0 )
     # weighting using rectangular window 

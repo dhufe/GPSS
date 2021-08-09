@@ -1,9 +1,11 @@
 #!/bin/bash
 
-#SBATCH --time=160:00:00
+#SBATCH --time=16:00:00
 #SBATCH --ntasks=1
+#sBATCH --nnodes=1
+#SBATCH --cpus-per-task=2
 
-#SBATCH --job-name=TA-2US-YZ
+#SBATCH --job-name=TA-1US-YZ
 
 #SBATCH --mail-type=ALL
 #SBATCH --mail-user=Daniel.Hufschlaeger@bam.de
