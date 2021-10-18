@@ -5,7 +5,6 @@ import matplotlib.pyplot as plt
 import matplotlib.mlab as mlab
 import matplotlib.colors as colors
 import seaborn as sns
-
 import pybamcmap
 
 sns.set()
@@ -247,49 +246,59 @@ def BuildCylindricalSource ( PlotSource=False ):
     return Xs, Ys, Zs
 
 
-def BuildArraySource ( ds, ElementSize, GapSize, Offset = [0,0], Type = 'Rect', NElement = 8, PlotSource = False ):
-    Xs = Ys = Zs = np.array([])
+def BuildArraySource ( ds, ElementSize, GapSize, WaveLength, dAngleIncident = 0,  Offset = [0,0], Type = 'Rect', NElement = 8, PlotSource = False ):
+    Xs = Ys = Zs = Ps = np.array([])
     # Shift by half elements multiplied with element width (and a half element as gap size)
     # This is done for centering the array 
     dOffSetY = -.5 * (NElement * ElementSize[1] + (NElement - 1) * GapSize ) 
     dOffSetX = 0# -.5 * ElementSize[0] 
+    dElementPitch = ElementSize[1] + GapSize 
 
     print ( 'Element size w=%f, h=%f\n' % (ElementSize[0], ElementSize[1]))
 
-    for iElement in range(0, 8 ):
+    for iElement in range(0, NElement ):
         dY = Offset[1] + dOffSetY + ( ElementSize[1] + GapSize ) * iElement 
         dX = Offset[0] + dOffSetX# + ElementSize[1] * iElement 
         dXs, dYs, dZs = BuildRectangularSource( ds, ElementSize[0], ElementSize[1], Start=[dY, dX] )
+
+        ## Element phase shift
+        dElementPhase = ( -2.0 * np.pi * np.sin ( np.pi * dAngleIncident / 180 ) ) * iElement * dElementPitch  / WaveLength  
+        print ( '%d / %d phasehifted by %f' % ( iElement, NElement, dElementPhase ) )
+        Ps = np.append ( Ps, np.ones( (dXs.size) ) * dElementPhase )
+
+        ## Append new source to the list of source points 
         Xs = np.append ( Xs, dXs )
         Ys = np.append ( Ys, dYs )
         Zs = np.append ( Zs, dZs )
 
-    if PlotSource:
+    if PlotSource == True:
         ####################
         # Plotting source configuration
         ####################
 
         fig, ax = plt.subplots(2, 2)
-        ax[0][0].scatter ( Xs*1e3, Ys*1e3, c='r', marker='o')
+        ax[0][0].scatter ( Xs*1e3, Ys*1e3, c=Ps, marker='o')
         ax[0][0].set_xlabel ( r'$x$ / $mm$', fontsize=fontsize )
         ax[0][0].set_ylabel ( r'$y$ / $mm$', fontsize=fontsize )
         ax[0][0].grid(True)
 
-        ax[0][1].scatter ( Xs*1e3, Zs*1e3, c='r', marker='o')
+        ax[0][1].scatter ( Xs*1e3, Zs*1e3, c=Ps, marker='o')
         ax[0][1].set_xlabel ( r'$x$ / $mm$', fontsize=fontsize )
         ax[0][1].set_ylabel ( r'$z$ / $mm$', fontsize=fontsize )
         ax[0][1].grid(True)
 
 
-        ax[1][0].scatter ( Ys*1e3, Zs*1e3, c='r', marker='o')
+        ax[1][0].scatter ( Ys*1e3, Zs*1e3, c=Ps, marker='o')
         ax[1][0].set_xlabel ( r'$y$ / $mm$', fontsize=fontsize )
         ax[1][0].set_ylabel ( r'$z$ / $mm$', fontsize=fontsize )
         ax[1][0].grid(True)
 
         fig.tight_layout()
-        plt.savefig( fig_prefix + 'PSS_Source_configuration.png', dpi=300 )
+        plt.savefig( 'PSS_Source_configuration.png', dpi=300 )
 
-    return Xs, Ys, Zs
+    # Ps = np.zeros ( Xs.size ) 
+
+    return Xs, Ys, Zs, Ps 
 
 def SaveData ( fileName, Xmesh, Ymesh, Zmesh, pdata ):
     with hd.File(fileName + '.mat', 'w') as fd:
@@ -364,42 +373,44 @@ def PlotData ( fileName, data, Xmesh, Ymesh ):
 
 def main():
     c = 343
-    frequs = np.array ( [ 125e3, 250e3, 375e3, 500e3 ] )#, 28.8e3, 57.6e3, 86.4e3 ] )
+    angles = np.array ( [25, 35, 40, 45 ] )
+    frequs = np.array ( [ 250e3 ] )#, 28.8e3, 57.6e3, 86.4e3 ] )
 
-   # ds = (c/np.amax(frequs))/20
-    for iFrequ in frequs:
-        print ( "Calculating soundfield @ %2.0f kHz." % ( iFrequ / 1e3) )
-        ##  Xs, Ys, Zs = BuildCircularSource(ds, .5*17e-3, PlotSource=True)
-        ds = (c/iFrequ)/20
+    # ds = (c/np.amax(frequs))/20
+    for iAngle in angles:
+        for iFrequ in frequs:
+            print ( "Calculating soundfield @ %2.0f kHz." % ( iFrequ / 1e3) )
+            ##  Xs, Ys, Zs = BuildCircularSource(ds, .5*17e-3, PlotSource=True)
+            ds = (c/iFrequ)/20
 
-        # ds, a , b 
-        # a in x direction
-        # b in y direction 
-        #Xs, Ys, Zs = BuildRectangularSource(ds, 17e-3, 17e-3, Start=[20e-3, 0], PlotSource=True )
-        #Xs, Ys, Zs = BuildCylindricalSource()
+            # ds, a , b 
+            # a in x direction
+            # b in y direction 
+            #Xs, Ys, Zs = BuildRectangularSource(ds, 17e-3, 17e-3, Start=[20e-3, 0], PlotSource=True )
+            #Xs, Ys, Zs = BuildCylindricalSource()
+            # def BuildArraySource ( ds, ElementSize, GapSize, WaveLength, dAngleIncident = 0,  Offset = [0,0], Type = 'Rect', NElement = 8, PlotSource = False ):
+            Xs, Ys, Zs, Ps = BuildArraySource( ds, [20e-3, 1e-3], .1e-3, (c/iFrequ), iAngle, Offset=[0,0], Type='Rect', NElement = 8, PlotSource=True)
+            X = np.arange ( -20e-3, 20e-3, ds)
+            Y = np.arange ( -20e-3, 20e-3, ds)
+            Z = np.arange( 0, 100e-3, ds )
+            I0 = 1 / Xs.size 
 
-        Xs, Ys, Zs = BuildArraySource( ds , ElementSize=[17e-3, 2e-3], GapSize=.5e-3, PlotSource=True)
-        X = np.arange ( -20e-3, 20e-3, ds)
-        Y = np.arange ( -20e-3, 20e-3, ds)
-        Z = np.arange( 0, 100e-3, ds )
-        I0 = 1 / Xs.size 
+            #[Xmesh, Ymesh] = np.meshgrid(X, Y)
+            #Zmesh = np.zeros ( Ymesh.shape )
 
-        #[Xmesh, Ymesh] = np.meshgrid(X, Y)
-        #Zmesh = np.zeros ( Ymesh.shape )
+            #Xmesh, Ymesh, Zmesh = np.meshgrid(X, Y, Z, indexing='ij')
+            Ymesh, Zmesh = np.meshgrid(Y, Z )
+            Xmesh = np.zeros ( Ymesh.shape )
 
-        #Xmesh, Ymesh, Zmesh = np.meshgrid(X, Y, Z, indexing='ij')
-        Xmesh, Zmesh = np.meshgrid(X, Z )
-        Ymesh = np.zeros ( Xmesh.shape )
+            p = np.zeros ( shape=Xmesh.shape, dtype=np.cdouble )
+            # gpss.gpss_calculation3D ( Xs, Ys, Zs, I0, iFrequ, Xmesh, Ymesh, Zmesh, p )
+            gpss.gpss_calculation2D ( Xs, Ys, Zs, Ps , I0, iFrequ, Xmesh, Ymesh, Zmesh, p )
 
-        p = np.zeros ( shape=Xmesh.shape, dtype=np.cdouble )
-        # gpss.gpss_calculation3D ( Xs, Ys, Zs, I0, iFrequ, Xmesh, Ymesh, Zmesh, p )
-        gpss.gpss_calculation2D ( Xs, Ys, Zs, I0, iFrequ, Xmesh, Ymesh, Zmesh, p )
-        
-        pp = np.sqrt ( p.imag*p.imag + p.real*p.real) 
-        Lp = 20*np.log10( pp  / 20e-6 )
-        fileName = str(int(iFrequ)) + '_Array_XZ'
-        SaveData ( fileName, Xmesh, Ymesh, Zmesh, pp)
-        PlotData( fileName, pp , Xmesh, Zmesh )
+            pp = np.sqrt ( p.imag*p.imag + p.real*p.real) 
+            Lp = 20*np.log10( pp  / 20e-6 )
+            fileName = str(int(iFrequ)) + '_Array_YZ_' + str(int(iAngle)) + '_DEG'
+            SaveData ( fileName, Xmesh, Ymesh, Zmesh, pp)
+            PlotData( fileName, pp , Ymesh, Zmesh )
 
 
 if __name__ == "__main__":
