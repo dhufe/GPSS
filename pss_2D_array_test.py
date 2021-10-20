@@ -4,8 +4,13 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.mlab as mlab
 import matplotlib.colors as colors
+import numpy as np
 import seaborn as sns
 import pybamcmap
+from Helpers import *
+import gpss
+import h5py as hd
+import os
 
 sns.set()
 sns.set_style("white")
@@ -13,7 +18,15 @@ plt.style.use('seaborn-deep')
 
 plt.rcParams['figure.figsize'] = (12, 8)
 
-fig_prefix = ""
+
+c = 343
+angles = np.arange( -90, 90+1.0, step=1.0 )
+frequs = np.array ( [ 250e3 ] )#, 28.8e3, 57.6e3, 86.4e3 ] )
+ElementWidth = 1e-3 # -7*.1e-3
+GapWidth = .1e-3
+NElements = 8
+
+fig_prefix = "N{:02d}_250000_Array_YZ_EW_{:04d}um_GS_{:04d}um".format(NElements, int(ElementWidth*1e6), int(GapWidth*1e6) )
 
 matplotlib.rc('xtick', labelsize=16)
 matplotlib.rc('ytick', labelsize=16)
@@ -23,10 +36,6 @@ NLevels = 50
 margin = 12
 fontsize = 16
 linewidth = 2.0
-
-from Helpers import *
-import gpss
-import h5py as hd
 
 # flood fill algorithm https://gist.github.com/JDWarner/1158a9515c7f1b1c21f1
 def floodfill ( data, seed_coords, fill_value ):
@@ -254,7 +263,7 @@ def BuildArraySource ( ds, ElementSize, GapSize, WaveLength, dAngleIncident = 0,
     dOffSetX = 0# -.5 * ElementSize[0] 
     dElementPitch = ElementSize[1] + GapSize 
 
-    print ( 'Element size w=%f, h=%f\n' % (ElementSize[0], ElementSize[1]))
+    print ( 'Element size h=%f mm, w=%f mm and g=%f mm\n' % (ElementSize[0]*1e3, ElementSize[1]*1e3, GapSize*1e3))
 
     for iElement in range(0, NElement ):
         dY = Offset[1] + dOffSetY + ( ElementSize[1] + GapSize ) * iElement 
@@ -295,6 +304,7 @@ def BuildArraySource ( ds, ElementSize, GapSize, WaveLength, dAngleIncident = 0,
 
         fig.tight_layout()
         plt.savefig( 'PSS_Source_configuration.png', dpi=300 )
+        plt.close(fig)
 
     # Ps = np.zeros ( Xs.size ) 
 
@@ -368,32 +378,33 @@ def PlotData ( fileName, data, Xmesh, Ymesh ):
     ax2.set_xlim ( bounds[0], bounds[1] )
     ax2.set_ylim ( .9 * np.amin (line) , 1.1 * np.amax (line) )
     plt.savefig( fileName + '.png', dpi=300 )
+    plt.close(fig)
 #    plt.savefig( fig_prefix + 'Arc_discharge_PSS_Sound_Pressurelevel.pdf', dpi=300 )
 
 
 def main():
-    c = 343
-    angles = np.array ( [25, 35, 40, 45 ] )
-    frequs = np.array ( [ 250e3 ] )#, 28.8e3, 57.6e3, 86.4e3 ] )
-
+    idx = 0
     # ds = (c/np.amax(frequs))/20
+
+    if ( os.path.exists( fig_prefix ) == False ):
+        os.mkdir( fig_prefix )
+
     for iAngle in angles:
         for iFrequ in frequs:
-            print ( "Calculating soundfield @ %2.0f kHz." % ( iFrequ / 1e3) )
+            print ( "Calculating soundfield @ %2.0f kHz with steering angle theta = %2.1f DEG." % ( iFrequ / 1e3 , iAngle ) )
             ##  Xs, Ys, Zs = BuildCircularSource(ds, .5*17e-3, PlotSource=True)
-            ds = (c/iFrequ)/20
-
+            ds = (c/iFrequ)/10
             # ds, a , b 
             # a in x direction
             # b in y direction 
             #Xs, Ys, Zs = BuildRectangularSource(ds, 17e-3, 17e-3, Start=[20e-3, 0], PlotSource=True )
             #Xs, Ys, Zs = BuildCylindricalSource()
             # def BuildArraySource ( ds, ElementSize, GapSize, WaveLength, dAngleIncident = 0,  Offset = [0,0], Type = 'Rect', NElement = 8, PlotSource = False ):
-            Xs, Ys, Zs, Ps = BuildArraySource( ds, [20e-3, 1e-3], .1e-3, (c/iFrequ), iAngle, Offset=[0,0], Type='Rect', NElement = 8, PlotSource=True)
-            X = np.arange ( -20e-3, 20e-3, ds)
-            Y = np.arange ( -20e-3, 20e-3, ds)
-            Z = np.arange( 0, 100e-3, ds )
-            I0 = 1 / Xs.size 
+            Xs, Ys, Zs, Ps = BuildArraySource( ds, [20e-3, ElementWidth ], GapWidth, (c/iFrequ), iAngle, Offset=[0,0], Type='Rect', NElement = NElements, PlotSource=True)
+            X = np.arange ( -30e-3, 30e-3, ds)
+            Y = np.arange ( -30e-3, 30e-3, ds)
+            Z = np.arange( 0, 50e-3, ds )
+            I0 = 1 
 
             #[Xmesh, Ymesh] = np.meshgrid(X, Y)
             #Zmesh = np.zeros ( Ymesh.shape )
@@ -408,9 +419,11 @@ def main():
 
             pp = np.sqrt ( p.imag*p.imag + p.real*p.real) 
             Lp = 20*np.log10( pp  / 20e-6 )
-            fileName = str(int(iFrequ)) + '_Array_YZ_' + str(int(iAngle)) + '_DEG'
+            fileName = fig_prefix + "/{:04d}_Array_YZ_{:d}_EW_{:04d}um_GS_{:04d}um".format ( int(idx), int(iFrequ), int(ElementWidth*1e6), int(GapWidth*1e6) )
+            #fileName = str(int(iFrequ)) + '_Array_YZ_' + str(int(iAngle*10)) + '_DEG'
             SaveData ( fileName, Xmesh, Ymesh, Zmesh, pp)
             PlotData( fileName, pp , Ymesh, Zmesh )
+            idx += 1
 
 
 if __name__ == "__main__":
