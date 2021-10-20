@@ -120,29 +120,7 @@ def BuildCircularSource ( ds, r, PlotSource = False ):
     Ys = (Ys - (np.amax(Ys)//2))*ds
 
     if PlotSource:
-        ####################
-        # Plotting source configuration
-        ####################
-
-        fig, ax = plt.subplots(2, 2)
-        ax[0][0].scatter ( Xs*1e3, Ys*1e3, c='r', marker='o')
-        ax[0][0].set_xlabel ( r'$x$ / $mm$', fontsize=fontsize )
-        ax[0][0].set_ylabel ( r'$y$ / $mm$', fontsize=fontsize )
-        ax[0][0].grid(True)
-
-        ax[0][1].scatter ( Xs*1e3, Zs*1e3, c='r', marker='o')
-        ax[0][1].set_xlabel ( r'$x$ / $mm$', fontsize=fontsize )
-        ax[0][1].set_ylabel ( r'$z$ / $mm$', fontsize=fontsize )
-        ax[0][1].grid(True)
-
-
-        ax[1][0].scatter ( Ys*1e3, Zs*1e3, c='r', marker='o')
-        ax[1][0].set_xlabel ( r'$y$ / $mm$', fontsize=fontsize )
-        ax[1][0].set_ylabel ( r'$z$ / $mm$', fontsize=fontsize )
-        ax[1][0].grid(True)
-
-        fig.tight_layout()
-        plt.savefig( fig_prefix + 'PSS_Source_configuration.png', dpi=300 )
+        PlotSources (Xs, Ys, Zs ) 
 
     return Xs, Ys, Zs
 
@@ -171,29 +149,7 @@ def BuildRectangularSource ( ds, a, b, Start = [0, 0], PlotSource = False ):
     Zs = np.zeros ( Xs.shape )
 
     if PlotSource:
-        ####################
-        # Plotting source configuration
-        ####################
-
-        fig, ax = plt.subplots(2, 2)
-        ax[0][0].scatter ( Xs*1e3, Ys*1e3, c='r', marker='o')
-        ax[0][0].set_xlabel ( r'$x$ / $mm$', fontsize=fontsize )
-        ax[0][0].set_ylabel ( r'$y$ / $mm$', fontsize=fontsize )
-        ax[0][0].grid(True)
-
-        ax[0][1].scatter ( Xs*1e3, Zs*1e3, c='r', marker='o')
-        ax[0][1].set_xlabel ( r'$x$ / $mm$', fontsize=fontsize )
-        ax[0][1].set_ylabel ( r'$z$ / $mm$', fontsize=fontsize )
-        ax[0][1].grid(True)
-
-
-        ax[1][0].scatter ( Ys*1e3, Zs*1e3, c='r', marker='o')
-        ax[1][0].set_xlabel ( r'$y$ / $mm$', fontsize=fontsize )
-        ax[1][0].set_ylabel ( r'$z$ / $mm$', fontsize=fontsize )
-        ax[1][0].grid(True)
-
-        fig.tight_layout()
-        plt.savefig( fig_prefix + 'PSS_Source_configuration.png', dpi=300 )
+        PlotSources (Xs, Ys, Zs ) 
 
     return Xs, Ys, Zs
 
@@ -222,36 +178,8 @@ def BuildCylindricalSource ( PlotSource=False ):
 
 
     if PlotSource:
-        ####################
-        # Plotting source configuration
-        ####################
-
-        fig, ax = plt.subplots(2, 2)
-        ax[0][0].scatter ( Xs*1e3, Ys*1e3, c='r', marker='o')
-        ax[0][0].set_xlabel ( r'$x$ / $mm$', fontsize=fontsize )
-        ax[0][0].set_ylabel ( r'$y$ / $mm$', fontsize=fontsize )
-        ax[0][0].grid(True)
-        ax[0][0].set_xlim ( -1.1*r*1e3, 1.1*r*1e3 )
-        ax[0][0].set_ylim ( -1.1*l*1e3, 1.1*l*1e3 )
-
-        ax[0][1].scatter ( Xs*1e3, Zs*1e3, c='r', marker='o')
-        ax[0][1].set_xlabel ( r'$x$ / $mm$', fontsize=fontsize )
-        ax[0][1].set_ylabel ( r'$z$ / $mm$', fontsize=fontsize )
-        ax[0][1].grid(True)
-        ax[0][1].set_xlim ( -1.1*r*1e3, 1.1*r*1e3 )
-        ax[0][1].set_ylim ( -1.1*r*1e3, 1.1*r*1e3 )
-
-
-        ax[1][0].scatter ( Ys*1e3, Zs*1e3, c='r', marker='o')
-        ax[1][0].set_xlabel ( r'$y$ / $mm$', fontsize=fontsize )
-        ax[1][0].set_ylabel ( r'$z$ / $mm$', fontsize=fontsize )
-        ax[1][0].grid(True)
-        ax[1][0].set_xlim ( -1.1*l*1e3, 1.1*l*1e3 )
-        ax[1][0].set_ylim ( -1.1*r*1e3, 1.1*r*1e3 )
-
-        fig.tight_layout()
-        plt.savefig( fig_prefix + 'PSS_Source_configuration.png', dpi=300 )
-
+        PlotSources ( Xs, Ys, Zs )
+            
     return Xs, Ys, Zs
 
 
@@ -281,30 +209,7 @@ def BuildArraySource ( ds, ElementSize, GapSize, WaveLength, dAngleIncident = 0,
         Zs = np.append ( Zs, dZs )
 
     if PlotSource == True:
-        ####################
-        # Plotting source configuration
-        ####################
-
-        fig, ax = plt.subplots(2, 2)
-        ax[0][0].scatter ( Xs*1e3, Ys*1e3, c=Ps, marker='o')
-        ax[0][0].set_xlabel ( r'$x$ / $mm$', fontsize=fontsize )
-        ax[0][0].set_ylabel ( r'$y$ / $mm$', fontsize=fontsize )
-        ax[0][0].grid(True)
-
-        ax[0][1].scatter ( Xs*1e3, Zs*1e3, c=Ps, marker='o')
-        ax[0][1].set_xlabel ( r'$x$ / $mm$', fontsize=fontsize )
-        ax[0][1].set_ylabel ( r'$z$ / $mm$', fontsize=fontsize )
-        ax[0][1].grid(True)
-
-
-        ax[1][0].scatter ( Ys*1e3, Zs*1e3, c=Ps, marker='o')
-        ax[1][0].set_xlabel ( r'$y$ / $mm$', fontsize=fontsize )
-        ax[1][0].set_ylabel ( r'$z$ / $mm$', fontsize=fontsize )
-        ax[1][0].grid(True)
-
-        fig.tight_layout()
-        plt.savefig( 'PSS_Source_configuration.png', dpi=300 )
-        plt.close(fig)
+        PlotSources(Xs, Ys, Zs, Ps )
 
     # Ps = np.zeros ( Xs.size ) 
 
@@ -382,6 +287,33 @@ def PlotData ( fileName, data, Xmesh, Ymesh ):
 #    plt.savefig( fig_prefix + 'Arc_discharge_PSS_Sound_Pressurelevel.pdf', dpi=300 )
 
 
+def PlotSources ( Xs, Ys, Zs, Ps = np.zeros( Xs.shape ) ):
+    ####################
+    # Plotting source configuration
+    ####################
+
+    fig, ax = plt.subplots(2, 2)
+    ax[0][0].scatter ( Xs*1e3, Ys*1e3, c=Ps, marker='o')
+    ax[0][0].set_xlabel ( r'$x$ / $mm$', fontsize=fontsize )
+    ax[0][0].set_ylabel ( r'$y$ / $mm$', fontsize=fontsize )
+    ax[0][0].grid(True)
+
+    ax[0][1].scatter ( Xs*1e3, Zs*1e3, c=Ps, marker='o')
+    ax[0][1].set_xlabel ( r'$x$ / $mm$', fontsize=fontsize )
+    ax[0][1].set_ylabel ( r'$z$ / $mm$', fontsize=fontsize )
+    ax[0][1].grid(True)
+
+
+    ax[1][0].scatter ( Ys*1e3, Zs*1e3, c=Ps, marker='o')
+    ax[1][0].set_xlabel ( r'$y$ / $mm$', fontsize=fontsize )
+    ax[1][0].set_ylabel ( r'$z$ / $mm$', fontsize=fontsize )
+    ax[1][0].grid(True)
+
+    fig.tight_layout()
+    plt.savefig( 'PSS_Source_configuration.png', dpi=300 )
+    plt.close(fig)
+
+
 def main():
     idx = 0
     # ds = (c/np.amax(frequs))/20
@@ -400,7 +332,7 @@ def main():
             #Xs, Ys, Zs = BuildRectangularSource(ds, 17e-3, 17e-3, Start=[20e-3, 0], PlotSource=True )
             #Xs, Ys, Zs = BuildCylindricalSource()
             # def BuildArraySource ( ds, ElementSize, GapSize, WaveLength, dAngleIncident = 0,  Offset = [0,0], Type = 'Rect', NElement = 8, PlotSource = False ):
-            Xs, Ys, Zs, Ps = BuildArraySource( ds, [20e-3, ElementWidth ], GapWidth, (c/iFrequ), iAngle, Offset=[0,0], Type='Rect', NElement = NElements, PlotSource=True)
+            Xs, Ys, Zs, Ps = BuildArraySource( ds, [20e-3, ElementWidth ], GapWidth, (c/iFrequ), iAngle, Offset=[0,0], Type='Rect', NElement = NElements )
             X = np.arange ( -30e-3, 30e-3, ds)
             Y = np.arange ( -30e-3, 30e-3, ds)
             Z = np.arange( 0, 50e-3, ds )
