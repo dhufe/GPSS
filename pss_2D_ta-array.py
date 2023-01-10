@@ -10,9 +10,10 @@ import os
 import h5py as hd
 
 df = 25e3 
-fmax = 2e5
+fStart = 125e3
+fEnd = 150e3
 c = 343 
-ds = (c/fmax)/5
+ds = (c/fEnd)/5
 pulsewidth = 1e-6
 Curv = [23e-3, 69e-3, 114e-3 ]
 iCurvIndex = 1
@@ -24,7 +25,9 @@ NElements = 8
 # TA_Array: TA042
 #RpElement = np.array ([ 59.1, 59.5, 59.2, 59.4, 59.5, 59.6, 60, 60.5 ])
 # TA_Array: TA044
-RpElement = np.array ([ 53.3, 53.3, 53.4, 53.7, 54.0, 54.7, 65, 57.5 ])
+# RpElement = np.array ([ 53.3, 53.3, 53.4, 53.7, 54.0, 54.7, 65.0, 57.5 ])
+# TA_Array: TA045
+RpElement = np.array ([ 59.0, 59.1, 60.2, 59.9, 61.3, 21.4, 64.5, 66.1]) 
 
 iSource = np.zeros ( ( NElements ) )
 
@@ -130,11 +133,11 @@ def SaveData ( fileName, Xmesh, Ymesh, Zmesh, pdata ):
 if ( os.path.exists ( prefix ) == False ):
     os.mkdir ( prefix )
 
-f = np.arange ( 1.5e5, fmax + df, df) 
+f = np.arange ( fStart, fEnd, df) 
 A_Rect = rect_puls(f, pulsewidth)
 #A_TA   = thermoacoustic_source(f, pulsewidth, Curv[iCurvIndex] )
 idx = 0
-for iFreq in np.arange ( 1.5e5, fmax + df, df):
+for iFreq in np.arange ( fStart, fEnd, df):
     X = np.arange ( -20e-3, 20e-3, ds)
     Y = np.arange ( -20e-3, 20e-3, ds)
     Z = np.arange ( 0, 200e-3, ds )
@@ -150,7 +153,7 @@ for iFreq in np.arange ( 1.5e5, fmax + df, df):
         iSource[iElement] = thermoacoustic_source( iFreq, pulsewidth, 17e-3, ElementWidth, RpElement[iElement], voltage=550 )
 
 
-    Xs, Ys, Zs, Ps, Is = GPSS.BuildArraySource( ds, [ 17e-3, ElementWidth ], GapWidth[0], (c/iFreq), 10, Offset=[0,0], Type='Rect', ApElement=iSource, NElement = NElements )
+    Xs, Ys, Zs, Ps, Is = GPSS.BuildArraySource( ds, [ 17e-3, ElementWidth ], GapWidth[0], (c/iFreq), 0, Offset=[0,0], Type='Rect', ApElement=iSource, NElement = NElements )
     
     GPSSPlot.PlottingSourceConfiguration(Xs, Ys, Zs, Ps, fileName=prefix + '/' + 'Phase_Distribution.png' )
     GPSSPlot.PlottingSourceConfiguration(Xs, Ys, Zs, Is, fileName=prefix + '/' + 'Amplitude_Distribution.png' )

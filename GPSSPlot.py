@@ -1,29 +1,29 @@
 import matplotlib.pyplot as plt 
 import numpy as np
-# import seaborn as sns 
+import seaborn as sns 
 import pybamcmap 
 
 class GPSSPlot:
-    @staticmethod 
-#    def set_style():
+
+    def set_style():
 #        # This sets reasonable defaults for font size for
 #        # a figure that will go in a paper
-#        sns.set_context("paper")
+        sns.set_context("paper")
 #    
 #        # Set the font to be serif, rather than sans
-#        sns.set(font='serif',style="ticks")
+        sns.set(font='serif',style="ticks")
 #
 #        # Make the background white, and specify the
 #        # specific font family
-#        sns.set_style("white", {
-#            "font.family": "serif",
-#            "font.serif": ["Times", "Palatino", "serif"]
-#        })
-#        sns.set_style("ticks", {"xtick.major.size": 8, "ytick.major.size": 8})
-#        sns.set_style({"xtick.direction": "in","ytick.direction": "in"})
+        sns.set_style("white", {
+            "font.family": "serif",
+            "font.serif": ["Times", "Palatino", "serif"]
+        })
+        sns.set_style("ticks", {"xtick.major.size": 8, "ytick.major.size": 8})
+        sns.set_style({"xtick.direction": "in","ytick.direction": "in"})
 
-    @staticmethod 
-    def set_size(fig, width, height ):
+ #   @staticmethod 
+    def set_size( fig, width, height ):
         fig.set_size_inches(6, 4)
         fig.tight_layout()
 
@@ -33,25 +33,29 @@ class GPSSPlot:
         """
     
         """
-        if Ps == None:
-            MarkerSize = 1
-        else:
-            MarkerSize = Ps 
+    
+        MarkerSize = 1
 
- #       GPSSPlot.set_style()
+        if Ps is not None:
+            c = Ps#/np.amax(Ps)
+        else:
+            c = 'r'
+
+        GPSSPlot.set_style()
 
         fig, ax = plt.subplots(2, 2)
-        ax[0][0].scatter ( Xs*1e3, Ys*1e3, s=MarkerSize, c='r', marker='o')
+
+        ax[0][0].scatter ( Xs*1e3, Ys*1e3, s=MarkerSize, c=c, marker='o')
         ax[0][0].set_xlabel ( r'$x$ / $mm$' )
         ax[0][0].set_ylabel ( r'$y$ / $mm$' )
         ax[0][0].grid(True)
     
-        ax[0][1].scatter ( Xs*1e3, Zs*1e3, s=MarkerSize, c='r', marker='o')
+        ax[0][1].scatter ( Xs*1e3, Zs*1e3, s=MarkerSize, c=c, marker='o')
         ax[0][1].set_xlabel ( r'$x$ / $mm$' )
         ax[0][1].set_ylabel ( r'$z$ / $mm$' )
         ax[0][1].grid(True)
 
-        ax[1][0].scatter ( Ys*1e3, Zs*1e3, s=MarkerSize, c='r', marker='o')
+        ax[1][0].scatter ( Ys*1e3, Zs*1e3, s=MarkerSize, c=c, marker='o')
         ax[1][0].set_xlabel ( r'$y$ / $mm$' )
         ax[1][0].set_ylabel ( r'$z$ / $mm$' )
         ax[1][0].grid(True)
@@ -105,7 +109,7 @@ class GPSSPlot:
         bounds = [ Xmesh.min(),Xmesh.max(),Ymesh.min(),Ymesh.max()]
   #      GPSSPlot.set_style()
    
-        im1 = ax0.pcolor ( Xmesh, Ymesh, data, cmap='bam_jet', shading='auto' ) 
+        im1 = ax0.pcolor ( Xmesh, Ymesh, data, cmap='bam_jet' ) 
 
         line = data[:, w//2]
 
