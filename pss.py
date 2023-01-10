@@ -9,15 +9,15 @@ np.asind = lambda x : np.arcsin( np.deg2rad(x) )
 class GPSS:
 
     @staticmethod
-    def BuildRectangularSource ( ds, a, b ):
-        x = np.arange ( -a/2, a/2, ds )
-        y = np.arange ( -b/2, b/2, ds )
+    def BuildRectangularSource ( ds, a, b, Start = [0, 0] ):
+        x = np.arange ( -a/2, a/2, ds ) + Start[1]
+        y = np.arange ( -b/2, b/2, ds ) + Start[0]
         Xs, Ys = np.meshgrid ( x, y )
         Xs = Xs.ravel()
         Ys = Ys.ravel()
         Zs = np.zeros ( Xs.shape )
 
-        return Xs, Ys, Zs
+        return Xs, Ys, Zs 
 
     @staticmethod 
     def SphereSegment( r, l ):
@@ -134,18 +134,70 @@ class GPSS:
 
 
         return Xs, Ys, Zs
+    
+    @staticmethod
+    def BuildArraySource ( ds, ElementSize, GapSize, WaveLength, dAngleIncident = 0,  Offset = [0,0], Geometry = 'Rect', Type = 'Thermoacoustic',  NElement = 8, ApElement = None ):
+        """
+        Implements an acoustic array source.
+
+        ds: numeric stepsize
+        ElementSize:
+        GapSize:
+        WaveLength:
+        dAngleIncident: 
+        Offset: Array [x,y ]
+        Geometry: geometry of sources Rect
+        Type: type of source: Thermoacoustic or moving mass transducer
+        NElement: Number of elements
+        ApElement: Element amplitude weighting
+        """
+        
+        Xs = Ys = Zs = Ps = Is = np.array([])
+        # Shift by half elements multiplied with element width (and a half element as gap size)
+        # This is done for centering the array 
+        dOffSetY = -.5 * (NElement * ElementSize[1] + (NElement - 1) * GapSize ) 
+        dOffSetX = 0# -.5 * ElementSize[0] 
+        dElementPitch = ElementSize[1] + GapSize 
+        dPhase = np.zeros( ( NElement ))
+
+        print ( 'Element size %f x %f mm and g=%f mm\n' % (ElementSize[0]*1e3, ElementSize[1]*1e3, GapSize*1e3))
+
+        for iElement in range(0, NElement ):
+            dY = Offset[1] + dOffSetY + ( ElementSize[1] + GapSize ) * iElement 
+            dX = Offset[0] + dOffSetX# + ElementSize[1] * iElement 
+            dXs, dYs, dZs = GPSS.BuildRectangularSource( ds, ElementSize[0], ElementSize[1], Start = [dY, dX] )
+
+            ## Element phase shift
+            dPhase[ iElement ] = ( -2.0 * np.pi * np.sind ( dAngleIncident ) ) * iElement * dElementPitch  / WaveLength   
+            # NHat = .5 * (NElement - 1)
+            # dPhase [ iElement] = - 2.0 * np.pi * 250e3 * ( FocalPoint / c ) * ( np.sqrt( 1 + np.power ( ( NHat * dElementPitch ) / FocalPoint , 2.0 ) + 2 * np.sin( np.pi * dAngleIncident / 180 ) * NHat * dElementPitch / FocalPoint  ) - np.sqrt ( 1 + np.power( (iElement - NHat ) * dElementPitch / FocalPoint , 2.0 ) - 2 * np.sin( np.pi * dAngleIncident / 180 ) * (iElement - NHat ) * dElementPitch / FocalPoint ) )
+            # print ( '%d / %d phasehifted by %2.1f DEG / %f ns' % ( iElement, NElement, np.pi * dPhase[iElement] / 180, 1e9 * dPhase[iElement] / ( 2 * np.pi * 250e3) ) )
+            Ps = np.append ( Ps, np.ones ( (dXs.size) ) * dPhase[iElement] )
+
+            ## Append new source to the list of source points 
+            Xs = np.append ( Xs, dXs )
+            Ys = np.append ( Ys, dYs )
+            Zs = np.append ( Zs, dZs )
+            if ( ApElement is not None ):
+                Is = np.append ( Is, np.ones( (dXs.size) ) * ApElement[ iElement ] / dXs.size )
+            else:
+                Is = np.append ( Is, np.ones( (dXs.size ) ) * 1.0/ (( iElement + 1 ) * dXs.size ) )
+     
+
+        return Xs, Ys, Zs, Ps, Is 
+
 
 
     @staticmethod 
-    def RunCalculation2D ( Xs, Ys, Zs, freq, Xmesh, Ymesh, Zmesh, I0 = 1 ):
+    def RunCalculation2D ( Xs, Ys, Zs, Ps, freq, Xmesh, Ymesh, Zmesh, I0 = 1 ):
         p = np.zeros ( shape=Xmesh.shape, dtype=np.cdouble )
-        gpss.gpss_calculation2D ( Xs, Ys, Zs, I0, freq, Xmesh, Ymesh, Zmesh, p )    
+        gpss.gpss_calculation2D ( Xs, Ys, Zs, Ps, I0, freq, Xmesh, Ymesh, Zmesh, p )    
         pp = np.sqrt ( p.imag*p.imag + p.real*p.real)
         return pp 
 
     @staticmethod 
-    def RunCalculation2DComplex ( Xs, Ys, Zs, freq, Xmesh, Ymesh, Zmesh, I0 = 1 ):
+    def RunCalculation2DComplex ( Xs, Ys, Zs, Ps, freq, Xmesh, Ymesh, Zmesh, I0 = 1 ):
         p = np.zeros ( shape=Xmesh.shape, dtype=np.cdouble )
-        gpss.gpss_calculation2D ( Xs, Ys, Zs, I0, freq, Xmesh, Ymesh, Zmesh, p )     
+        gpss.gpss_calculation2D ( Xs, Ys, Zs, Ps, I0, freq, Xmesh, Ymesh, Zmesh, p )     
         return p 
  
