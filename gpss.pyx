@@ -56,7 +56,7 @@ def calculateC(To = 20 ):
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def gpss_calculation3D ( double[:] Xs, double[:] Ys, double[:] Zs, double[:] Phase, double Q, double f, double [:, :, : ] Xmesh, double [:, :, :] Ymesh, double [:, :, :] Zmesh, double complex [:, :, :] p ):
+def gpss_calculation3D ( double[:] Xs, double[:] Ys, double[:] Zs, double[:] Phase, double[:] Q, double f, double [:, :, : ] Xmesh, double [:, :, :] Ymesh, double [:, :, :] Zmesh, double complex [:, :, :] p ):
     cdef long nX = Xmesh.shape[0]
     cdef long nY = Xmesh.shape[1]
     cdef long nZ = Xmesh.shape[2]
@@ -73,7 +73,7 @@ def gpss_calculation3D ( double[:] Xs, double[:] Ys, double[:] Zs, double[:] Pha
                 for iY in range ( nY ):
                     for iZ in range ( nZ ):
                         r = ((Xmesh[iX, iY, iZ]-Xs[iStep])**2.0 + (Ymesh[iX, iY, iZ]-Ys[iStep])**2.0 + (Zmesh[iX, iY, iZ]-Zs[iStep])**2.0 )**.5
-                        p[iX, iY, iZ] += pressure1D( r, f, Phase[iStep], Q , dAlpha , c  )
+                        p[iX, iY, iZ] += pressure1D( r, f, Phase[iStep], Q[iStep] , dAlpha , c  )
 
 #                    with gil:
 #                        progress ( iStep, nSteps, 'Calculating 3D soundfield' )
@@ -81,7 +81,7 @@ def gpss_calculation3D ( double[:] Xs, double[:] Ys, double[:] Zs, double[:] Pha
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-def gpss_calculation2D ( double[:] Xs, double[:] Ys, double[:] Zs, double[:] Phase, double Q, double f, double [:, : ] Xmesh, double [:, :] Ymesh, double [:, :] Zmesh, double complex [:, :] p ):
+def gpss_calculation2D ( double[:] Xs, double[:] Ys, double[:] Zs, double[:] Phase, double[:] Q, double f, double [:, : ] Xmesh, double [:, :] Ymesh, double [:, :] Zmesh, double complex [:, :] p ):
     cdef long nX = Xmesh.shape[0]
     cdef long nY = Xmesh.shape[1]
     cdef long nSteps = Xs.size
@@ -96,7 +96,7 @@ def gpss_calculation2D ( double[:] Xs, double[:] Ys, double[:] Zs, double[:] Pha
             for iX in range ( nX ):
                 for iY in range ( nY ):
                     r = ((Xmesh[iX, iY]-Xs[iStep])**2.0 + (Ymesh[iX, iY]-Ys[iStep])**2.0 + (Zmesh[iX, iY]-Zs[iStep])**2.0 )**.5
-                    p[iX, iY] += pressure1D( r, f , Phase[iStep], Q, dAlpha, c  )
+                    p[iX, iY] += pressure1D( r, f , Phase[iStep], Q[iStep], dAlpha, c  )
 
 #                with gil:
 #                    progress ( iStep, nSteps, 'Calculating 2D soundfield' )
