@@ -10,8 +10,8 @@ import os
 import h5py as hd
 
 df = 25e3 
-fStart = 125e3
-fEnd = 150e3
+fStart = 25e3
+fEnd = 300e3 + df
 c = 343 
 ds = (c/fEnd)/5
 pulsewidth = 1e-6
@@ -25,9 +25,9 @@ NElements = 8
 # TA_Array: TA042
 #RpElement = np.array ([ 59.1, 59.5, 59.2, 59.4, 59.5, 59.6, 60, 60.5 ])
 # TA_Array: TA044
-# RpElement = np.array ([ 53.3, 53.3, 53.4, 53.7, 54.0, 54.7, 65.0, 57.5 ])
+RpElement = np.array ([ 53.3, 53.3, 53.4, 53.7, 54.0, 54.7, 65.0, 57.5 ])
 # TA_Array: TA045
-RpElement = np.array ([ 59.0, 59.1, 60.2, 59.9, 61.3, 21.4, 64.5, 66.1]) 
+#RpElement = np.array ([ 59.0, 59.1, 60.2, 59.9, 61.3, 21.4, 64.5, 66.1]) 
 
 iSource = np.zeros ( ( NElements ) )
 
