@@ -26,15 +26,23 @@ cdef void progress( long count, long total, suffix=''):
     sys.stdout.write('%s [%s] %s%s\r' % (suffix, bar, percents, '%'))
     sys.stdout.flush()  # As suggested by Rom Ruben
 
-cdef double complex pressure1D ( double x, double f, double Phase, double Q, double dAlpha, double c, double P0 = 101300 ) nogil: 
+cdef double complex pressure1D ( double r, double f, double Phase, double Q, double dAlpha, double c, double P0 = 101300 ) nogil: 
+    """
+    Computes the complex pressure for a certain distance r
+    """
     cdef double lamda     = c / f
-    cdef double t         = x / c 
+    cdef double t         = r / c 
     cdef double omega     = 2*M_PI*f 
-    cdef double         a = Q * cos(omega * t + Phase ) * exp(-1*dAlpha*x) * ((lamda/4) / x)
-    cdef double         b = Q * sin(omega * t + Phase ) * exp(-1*dAlpha*x) * ((lamda/4) / x)
+
+    cdef double a         = Q * cos(omega * t + Phase ) * exp(-1*dAlpha*r) * ((lamda/4) / r)
+    cdef double b         = Q * sin(omega * t + Phase ) * exp(-1*dAlpha*r) * ((lamda/4) / r)
     return a + 1j*b
 
 def calculateAlpha(f, To=20, Po=101300):
+    """
+        Computation of the acoustic attenuation in air (or any other type of gas) using the frequency f, the temperature To and the atmospheric pressure.
+        The parameters needed for computation are from literature.
+    """
     Cpluft                 = 1003.7                         # [J/kg*K] bei 0°C
     Cvluft                 = 717.3                          # [J/kg*K] bei 0°C
     Roluft                 = Po*28.97/(8314*(To+273.15))
@@ -97,6 +105,6 @@ def gpss_calculation2D ( double[:] Xs, double[:] Ys, double[:] Zs, double[:] Pha
                 for iY in range ( nY ):
                     r = ((Xmesh[iX, iY]-Xs[iStep])**2.0 + (Ymesh[iX, iY]-Ys[iStep])**2.0 + (Zmesh[iX, iY]-Zs[iStep])**2.0 )**.5
                     p[iX, iY] += pressure1D( r, f , Phase[iStep], Q[iStep], dAlpha, c  )
-
+# commented because, printing progress will cost computation time for waiting until stdout is finished
 #                with gil:
 #                    progress ( iStep, nSteps, 'Calculating 2D soundfield' )
