@@ -49,6 +49,8 @@ Xs, Ys, Zs = GPSS.BuildRectangularSource(ds, 5e-3, 10e-3  )
 I0 = 1 / Ys.size 
 # Calculating the resulting two-dimensional complex field
 Is = np.ones ( Xs.shape ) * I0
+# Plot source configurations 
+GPSSPlot.PlottingSourceConfiguration ( Xs, Ys, Zs, Is, fileName = prefix + '/source_config.png' ) 
 # Phase shifting of each simulation source is zero
 Phs = np.zeros ( Ys.shape )
 # run the calculation

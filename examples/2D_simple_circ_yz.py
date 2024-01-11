@@ -20,16 +20,16 @@ Y = np.arange ( -20e-3, 20e-3, ds)
 Z = np.arange ( 0, 200e-3, ds )
 
 # build mesh
-Xmesh, Zmesh = np.meshgrid(X , Z )
-Ymesh = np.zeros ( Xmesh.shape )
+Ymesh, Zmesh = np.meshgrid(Y , Z )
+Xmesh = np.zeros ( Ymesh.shape )
 
-p = np.zeros ( shape=Xmesh.shape, dtype=np.double )
+p = np.zeros ( shape=Ymesh.shape, dtype=np.double )
 
 now = datetime.now()
 prefix = 'simdata/' + now.strftime("%Y%m%d-%H%M")
 print ( 'Data ist stored under : %s.' % (prefix) )
 
-fileName = prefix + '/SimpleRect_XZ'
+fileName = prefix + '/SimpleCirc_YZ'
 
 def SaveData ( fileName, Xmesh, Ymesh, Zmesh, pdata ):
     with hd.File( fileName + '.mat', 'w') as fd:
@@ -44,7 +44,8 @@ if (os.path.exists ( prefix ) == False ):
 
 print ( 'Calculating soundfield @ %3.1f kHz\n' % ( fm*1e-3 ) )
 # build acoustical source 
-Xs, Ys, Zs = GPSS.BuildRectangularSource(ds, 5e-3, 10e-3  )
+Xs, Ys, Zs = GPSS.BuildCircularSource(ds, 10e-3 )
+print ( 'Source profile generated.')
 # amplitude weighting 
 I0 = 1 / Xs.size 
 # Calculating the resulting two-dimensional complex field
@@ -56,6 +57,6 @@ Phs = np.zeros ( Xs.shape )
 # run the calculation
 p = GPSS.run_calc_2d(Xs, Ys, Zs, Phs, fm, Xmesh, Ymesh, Zmesh, Is )
 # Plot soundfield 
-GPSSPlot.PlotFieldData( fileName, p, Xmesh, Zmesh)
+GPSSPlot.PlotFieldData( fileName, p, Ymesh, Zmesh)
 # save the data
 SaveData(fileName, Xmesh, Ymesh, Zmesh, p )
