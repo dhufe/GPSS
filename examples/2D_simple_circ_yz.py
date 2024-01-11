@@ -57,6 +57,6 @@ Phs = np.zeros ( Xs.shape )
 # run the calculation
 p = GPSS.run_calc_2d(Xs, Ys, Zs, Phs, fm, Xmesh, Ymesh, Zmesh, Is )
 # Plot soundfield 
-GPSSPlot.PlotFieldData( fileName, p, Ymesh, Zmesh)
+GPSSPlot.PlotFieldData( fileName, p , Ymesh, Zmesh)
 # save the data
 SaveData(fileName, Xmesh, Ymesh, Zmesh, p )
