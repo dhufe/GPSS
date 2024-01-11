@@ -109,7 +109,7 @@ class GPSSPlot:
         bounds = [ Xmesh.min(),Xmesh.max(),Ymesh.min(),Ymesh.max()]
   #      GPSSPlot.set_style()
    
-        im1 = ax0.pcolor ( Xmesh, Ymesh, data, cmap='bam_jet' ) 
+        im1 = ax0.pcolor ( Xmesh, Ymesh, data, cmap='bam_jet', vmin=np.amin(data), vmax=np.amax(data) ) 
 
         line = data[:, w//2]
 
@@ -124,6 +124,6 @@ class GPSSPlot:
         ax2.set_xlim ( bounds[0], bounds[1] )
         ax2.set_ylim ( .9 * np.amin (line) , 1.1 * np.amax (line) )
         plt.savefig( fileName + '.png', dpi=300 )
-        plt.savefig( fileName + '.pdf', dpi=300 )
+        #plt.savefig( fileName + '.pdf', dpi=300 )
         plt.close(fig)
 
