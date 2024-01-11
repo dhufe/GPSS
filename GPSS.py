@@ -11,8 +11,8 @@ class GPSS:
 
     @staticmethod
     def BuildRectangularSource(ds, a, b, Start=[0, 0]):
-        x = np.arange(-a / 2, a / 2, ds) + Start[1]
-        y = np.arange(-b / 2, b / 2, ds) + Start[0]
+        x = np.linspace(-a / 2, a / 2, num=int(a/ds), endpoint=False) + Start[1]
+        y = np.linspace(-b / 2, b / 2, num=int(b/ds), endpoint=False) + Start[0]
         xs, ys = np.meshgrid(x, y)
         xs = xs.ravel()
         ys = ys.ravel()
@@ -41,65 +41,66 @@ class GPSS:
         zs = np.zeros ( xs.size )
         return xs, ys, zs
 
-    @staticmethod
-    def sphere_segment(radius, length):
+    @staticmethod 
+    def SphereSegment( r, l ):
         """
         Calculating a sphere segment
 
-        radius: segment radius
-        length: half segment length (over the surface of the sphere
+        r: segment radius
+        l: half segment length (over the surface of the sphere
         """
-        alpha = length * 180.0 / (np.pi * radius)
-        rl = radius * np.sind(alpha)
-        hl = radius - np.sqrt(radius ** 2 - rl ** 2)
+        alpha = l * 180.0 / (np.pi * r )
+        rl = r * np.sind (alpha)
+        hl = r - np.sqrt ( r**2 - rl**2 )
         sl = 2 * np.pi * rl * hl
-        ll = 2 * np.pi * rl
+        ll = 2 * np.pi * rl 
         return rl, hl, sl, ll
 
     @staticmethod
-    def build_spherically_circular_source(ds, rs, r):
+    def BuildSphericallyCircularSource ( ds, Rs, R ):
         """
         Implements a spherical curved acoustic source pattern
 
-        ds: numeric step size
+        ds: numeric stepsize
         r:  radius of the source
         rc: radius of the curvature
+        Plot: Plotting source distribution
 
         """
 
-        alpha = np.arcsin(rs / r) * 180 / np.pi
-        L = np.pi * r / 180.0 * alpha
+        alpha = np.arcsin(Rs/ R) * 180 / np.pi
+        L = np.pi * R / 180.0 * alpha
 
-        H = r - np.sqrt(r ** 2 - rs ** 2)
-        S = 2 * np.pi * r * H
-        l0 = ds * .5
-        r0, h0, s0, ll0 = GPSS.sphere_segment(r, l0)
+        H = R - np.sqrt ( R**2 - Rs**2)
+        S = 2 * np.pi * R * H
+        l0 = ds*.5 
+        r0, h0, s0, ll0 = GPSS.SphereSegment( R, l0 )
 
         Xs = Ys = Zs = np.array([])
 
-        nRings = int(np.ceil((L - l0) / ds))
-        dRings = L / nRings
-        l = l0
-        sprev = s0
-        nSource = 0
+        nRings = int( np.ceil((L - l0)/ds ) )
+        dRings = L / nRings 
+        l = l0 
+        sprev = s0 
+        nSource = 0 
 
-        for iRing in range(1, nRings):
-            l += dRings
-            r, h, s, ll = GPSS.sphere_segment(r, l)
+        for iRing in range (1, nRings ):
+            l += dRings 
+            r, h, s, ll = GPSS.SphereSegment(R, l)
             sRing = s - sprev
             sprev = s
 
-            nPieces = int(np.ceil(ll / ds))
-            dBeta = 360 / nPieces
+            nPieces = int ( np.ceil ( ll / ds ) )
+            dBeta = 360 / nPieces 
             nSource += nPieces
 
-            rh, hh, sh, llh = GPSS.sphere_segment(r, l + dRings * .5)
+            rh, hh, sh, llh = GPSS.SphereSegment(R , l + dRings*.5 )
 
-            for iPiece in range(0, nPieces):
+            for iPiece in range ( 0, nPieces ):
                 beta = iPiece * dBeta
-                Xs = np.append(Xs, rh * np.sind(beta))
-                Ys = np.append(Ys, rh * np.cosd(beta))
-                Zs = np.append(Zs, hh)
+                Xs = np.append ( Xs, rh * np.sind(beta) )
+                Ys = np.append ( Ys, rh * np.cosd(beta) )
+                Zs = np.append ( Zs, hh)
 
         return Xs, Ys, Zs
 
