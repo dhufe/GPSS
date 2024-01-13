@@ -177,12 +177,12 @@ class GPSS:
         Xs = Ys = Zs = Ps = Is = np.array([])
         # Shift by half elements multiplied with element width (and a half element as gap size)
         # This is done for centering the array 
-        dOffSetY = -.5 * (NElement * ElementSize[1] + (NElement - 1) * GapSize)
+        dOffSetY = -.5 * ((NElement - 1 ) * (ElementSize[1] + GapSize))
         dOffSetX = 0  # -.5 * ElementSize[0]
         dElementPitch = ElementSize[1] + GapSize
         dPhase = np.zeros((NElement))
 
-        print('Element size %f x %f mm and g=%f mm\n' % (ElementSize[0] * 1e3, ElementSize[1] * 1e3, GapSize * 1e3))
+        print('Element size %.1f x %.1f mm and g=%.1f mm\n' % (ElementSize[0] * 1e3, ElementSize[1] * 1e3, GapSize * 1e3))
 
         for iElement in range(0, NElement):
             dY = Offset[1] + dOffSetY + (ElementSize[1] + GapSize) * iElement
@@ -190,7 +190,7 @@ class GPSS:
             dXs, dYs, dZs = GPSS.BuildRectangularSource(ds, ElementSize[0], ElementSize[1], Start=[dY, dX])
 
             ## Element phase shift
-            dPhase[iElement] = (-2.0 * np.pi * np.sind(dAngleIncident)) * iElement * dElementPitch / WaveLength
+            dPhase[iElement] = (-2.0 * np.pi * np.sin( 2 * np.pi * dAngleIncident / 180.0 )) * iElement * dElementPitch / WaveLength
             # NHat = .5 * (NElement - 1)
             # dPhase [ iElement] = - 2.0 * np.pi * 250e3 * ( FocalPoint / c ) * ( np.sqrt( 1 + np.power ( ( NHat * dElementPitch ) / FocalPoint , 2.0 ) + 2 * np.sin( np.pi * dAngleIncident / 180 ) * NHat * dElementPitch / FocalPoint  ) - np.sqrt ( 1 + np.power( (iElement - NHat ) * dElementPitch / FocalPoint , 2.0 ) - 2 * np.sin( np.pi * dAngleIncident / 180 ) * (iElement - NHat ) * dElementPitch / FocalPoint ) )
             # print ( '%d / %d phasehifted by %2.1f DEG / %f ns' % ( iElement, NElement, np.pi * dPhase[iElement] / 180, 1e9 * dPhase[iElement] / ( 2 * np.pi * 250e3) ) )
@@ -205,11 +205,12 @@ class GPSS:
             else:
                 Is = np.append(Is, np.ones((dXs.size)) * 1.0 / ((iElement + 1) * dXs.size))
 
-        return Xs, Ys, Zs, Ps, Is
+        return Xs, Ys, Zs, Is, Ps, dPhase
 
     @staticmethod
     def run_calc_2d(Xs, Ys, Zs, Ps, freq, Xmesh, Ymesh, Zmesh, I0=1):
         p = np.zeros(shape=Xmesh.shape, dtype=np.cdouble)
+        # gpss_calculation2D (  Xs,  Ys,  Zs,  Phase, Q, f, Xmesh, Ymesh,  Zmesh, p ):
         gpss.gpss_calculation2D(Xs, Ys, Zs, Ps, I0, freq, Xmesh, Ymesh, Zmesh, p)
         pp = np.sqrt(p.imag * p.imag + p.real * p.real)
         return pp
