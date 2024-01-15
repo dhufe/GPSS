@@ -11,8 +11,8 @@ class GPSS:
 
     @staticmethod
     def BuildRectangularSource(ds, a, b, Start=[0, 0]):
-        x = np.linspace(-a / 2, a / 2, num=int(a/ds), endpoint=False) + Start[1]
-        y = np.linspace(-b / 2, b / 2, num=int(b/ds), endpoint=False) + Start[0]
+        x = np.arange(-a / 2, a / 2, ds) + Start[1]
+        y = np.arange(-b / 2, b / 2, ds) + Start[0]
         xs, ys = np.meshgrid(x, y)
         xs = xs.ravel()
         ys = ys.ravel()
@@ -177,7 +177,7 @@ class GPSS:
         Xs = Ys = Zs = Ps = Is = np.array([])
         # Shift by half elements multiplied with element width (and a half element as gap size)
         # This is done for centering the array 
-        dOffSetY = -.5 * ((NElement - 1 ) * (ElementSize[1] + GapSize))
+        dOffSetY = -.5 * ((NElement - 1 ) * ElementSize[1] + (NElement - 1) * GapSize ) 
         dOffSetX = 0  # -.5 * ElementSize[0]
         dElementPitch = ElementSize[1] + GapSize
         dPhase = np.zeros((NElement))
@@ -190,11 +190,13 @@ class GPSS:
             dXs, dYs, dZs = GPSS.BuildRectangularSource(ds, ElementSize[0], ElementSize[1], Start=[dY, dX])
 
             ## Element phase shift
-            dPhase[iElement] = (-2.0 * np.pi * np.sin( 2 * np.pi * dAngleIncident / 180.0 )) * iElement * dElementPitch / WaveLength
+            dPhase[ iElement ] = ( -2.0 * np.pi * np.sin ( np.pi * dAngleIncident / 180 ) ) * iElement * dElementPitch  / WaveLength  
+            print ( '%d / %d phasehifted by %1.3f / %04.0f ns' % ( iElement, NElement, dPhase[iElement], 1e9 * dPhase[iElement] / (2 * np.pi * 250e3) ) )
+        
             # NHat = .5 * (NElement - 1)
             # dPhase [ iElement] = - 2.0 * np.pi * 250e3 * ( FocalPoint / c ) * ( np.sqrt( 1 + np.power ( ( NHat * dElementPitch ) / FocalPoint , 2.0 ) + 2 * np.sin( np.pi * dAngleIncident / 180 ) * NHat * dElementPitch / FocalPoint  ) - np.sqrt ( 1 + np.power( (iElement - NHat ) * dElementPitch / FocalPoint , 2.0 ) - 2 * np.sin( np.pi * dAngleIncident / 180 ) * (iElement - NHat ) * dElementPitch / FocalPoint ) )
             # print ( '%d / %d phasehifted by %2.1f DEG / %f ns' % ( iElement, NElement, np.pi * dPhase[iElement] / 180, 1e9 * dPhase[iElement] / ( 2 * np.pi * 250e3) ) )
-            Ps = np.append(Ps, np.ones((dXs.size)) * dPhase[iElement])
+            Ps = np.append ( Ps, np.ones( (dXs.size) ) * dPhase[iElement] )
 
             ## Append new source to the list of source points 
             Xs = np.append(Xs, dXs)
@@ -208,7 +210,7 @@ class GPSS:
         return Xs, Ys, Zs, Is, Ps, dPhase
 
     @staticmethod
-    def run_calc_2d(Xs, Ys, Zs, Ps, freq, Xmesh, Ymesh, Zmesh, I0=1):
+    def run_calc_2d(Xs, Ys, Zs, Ps, freq, Xmesh, Ymesh, Zmesh, I0):
         p = np.zeros(shape=Xmesh.shape, dtype=np.cdouble)
         # gpss_calculation2D (  Xs,  Ys,  Zs,  Phase, Q, f, Xmesh, Ymesh,  Zmesh, p ):
         gpss.gpss_calculation2D(Xs, Ys, Zs, Ps, I0, freq, Xmesh, Ymesh, Zmesh, p)
