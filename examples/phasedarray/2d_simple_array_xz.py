@@ -41,16 +41,16 @@ def main():
     Z = np.arange ( 0, 300e-3, ds )
 
     # build mesh
-    Ymesh, Zmesh = np.meshgrid(Y , Z )
-    Xmesh = np.zeros ( Ymesh.shape )
+    Xmesh, Zmesh = np.meshgrid(X , Z )
+    Ymesh = np.zeros ( Xmesh.shape )
 
-    p = np.zeros ( shape=Ymesh.shape, dtype=np.cdouble )
+    p = np.zeros ( shape=Xmesh.shape, dtype=np.cdouble )
 
     now = datetime.now()
     prefix = 'simdata/' + now.strftime("%Y%m%d-%H%M")
     print ( 'Data ist stored under : %s.' % (prefix) )
 
-    fileName = prefix + '/PhasedArray_YZ'
+    fileName = prefix + '/PhasedArray_XZ'
 
     ## create path for storing the simulation data (if not exists)
     if (os.path.exists ( prefix ) == False ):
@@ -68,7 +68,7 @@ def main():
     # run the calculation
     pp = GPSS.run_calc_2d (Xs, Ys, Zs, Phs, fm, Xmesh, Ymesh, Zmesh, Is )
     # Plot soundfield 
-    GPSSPlot.PlotFieldData( fileName, pp, Ymesh, Zmesh)
+    GPSSPlot.PlotFieldData( fileName, pp, Xmesh, Zmesh)
 
     paramDict = {
                         "Phi": dAngle,
