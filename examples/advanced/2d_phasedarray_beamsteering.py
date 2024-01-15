@@ -16,7 +16,7 @@ c = 343
 WaveLength = c / fm
 # spatial resolution (should be at least a fifth of the wavelength)
 ds = WaveLength/5
-ElementWidth = 1.0e-3
+ElementWidth = 0.5e-3
 ElementHeigth = 20e-3
 GapWidth = 100e-6
 NElements = 8 
@@ -49,7 +49,7 @@ def main():
 
     print ( 'Calculating soundfields @ %3.1f kHz\n' % ( fm*1e-3 ) )
 
-    dSteeringAngles = np.arange ( -45, 45, 1.0 )
+    dSteeringAngles = np.linspace ( -45.0, 45.0, num=91 )
 
     for dAngle in dSteeringAngles:
 
