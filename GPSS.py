@@ -222,3 +222,17 @@ class GPSS:
         p = np.zeros(shape=Xmesh.shape, dtype=np.cdouble)
         gpss.gpss_calculation2D(Xs, Ys, Zs, Ps, I0, freq, Xmesh, Ymesh, Zmesh, p)
         return p
+
+    @staticmethod
+    def run_calc_3d(Xs, Ys, Zs, Ps, freq, Xmesh, Ymesh, Zmesh, I0):
+        p = np.zeros(shape=Xmesh.shape, dtype=np.cdouble)
+        # gpss_calculation2D (  Xs,  Ys,  Zs,  Phase, Q, f, Xmesh, Ymesh,  Zmesh, p ):
+        gpss.gpss_calculation3D(Xs, Ys, Zs, Ps, I0, freq, Xmesh, Ymesh, Zmesh, p)
+        pp = np.sqrt(p.imag * p.imag + p.real * p.real)
+        return pp
+
+    @staticmethod
+    def run_calc_3d_complex(Xs, Ys, Zs, Ps, freq, Xmesh, Ymesh, Zmesh, I0=1):
+        p = np.zeros(shape=Xmesh.shape, dtype=np.cdouble)
+        gpss.gpss_calculation3D(Xs, Ys, Zs, Ps, I0, freq, Xmesh, Ymesh, Zmesh, p)
+        return p
