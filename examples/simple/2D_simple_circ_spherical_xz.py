@@ -14,6 +14,8 @@ fm =250e3
 c = 343 
 # spatial resolution (should be at least a fifth of the wavelength)
 ds = (c/fm)/5
+SourceRadius = 20e-3
+SourceCurvature = 50e-3
 
 X = np.arange ( -20e-3, 20e-3, ds)
 Y = np.arange ( -20e-3, 20e-3, ds)
@@ -23,7 +25,7 @@ Z = np.arange ( 0, 200e-3, ds )
 Xmesh, Zmesh = np.meshgrid(X , Z )
 Ymesh = np.zeros ( Xmesh.shape )
 
-p = np.zeros ( shape=Ymesh.shape, dtype=np.double )
+p = np.zeros ( shape=Xmesh.shape, dtype=np.double )
 
 now = datetime.now()
 prefix = 'simdata/' + now.strftime("%Y%m%d-%H%M")
@@ -31,8 +33,13 @@ print ( 'Data ist stored under : %s.' % (prefix) )
 
 fileName = prefix + '/SimpleCirc_XZ'
 
-def SaveData ( fileName, Xmesh, Ymesh, Zmesh, pdata ):
+def SaveData ( fileName, Xmesh, Ymesh, Zmesh, pdata, paramDict = None ):
     with hd.File( fileName + '.mat', 'w') as fd:
+
+        if paramDict:
+            for key in paramDict.keys():
+                fd.attrs[key] = paramDict[key]
+
         fd.create_dataset('Xmesh', data=Xmesh,compression="gzip", compression_opts=9)
         fd.create_dataset('Ymesh', data=Ymesh,compression="gzip", compression_opts=9)
         fd.create_dataset('Zmesh', data=Zmesh,compression="gzip", compression_opts=9)
@@ -44,7 +51,7 @@ if (os.path.exists ( prefix ) == False ):
 
 print ( 'Calculating soundfield @ %3.1f kHz\n' % ( fm*1e-3 ) )
 # build acoustical source 
-Xs, Ys, Zs = GPSS.BuildSphericallyCircularSource(ds, 10e-3, 50e-3 )
+Xs, Ys, Zs = GPSS.BuildSphericallyCircularSource(ds, SourceRadius, SourceCurvature )
 # amplitude weighting 
 I0 = 1 / Xs.size 
 # Calculating the resulting two-dimensional complex field
@@ -57,5 +64,15 @@ Phs = np.zeros ( Xs.shape )
 p = GPSS.run_calc_2d(Xs, Ys, Zs, Phs, fm, Xmesh, Ymesh, Zmesh, Is )
 # Plot soundfield 
 GPSSPlot.PlotFieldData( fileName, p, Xmesh, Zmesh)
+
+paramDict = {
+                "ds":  ds,
+                "Frequency": fm,
+                "SourceRadius": SourceRadius,
+                "SourceCurvature": SourceCurvature,
+                "MaxAmplitude": np.amax(p),
+                "MinAmplitude": np.amin(p) 
+            }
+
 # save the data
-SaveData(fileName, Xmesh, Ymesh, Zmesh, p )
+SaveData(fileName, Xmesh, Ymesh, Zmesh, p, paramDict = paramDict )
